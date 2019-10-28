@@ -19,7 +19,9 @@ void DebugMovement::Tick(float deltaTime)
 	XMVECTOR globalForward = XMLoadFloat3(&fwdData);
 
 	XMFLOAT3 rightData = transform->GetRight();
+	rightData.y = 0; // We don't want the camera to move vertically when moving left or right
 	XMVECTOR globalRight = XMLoadFloat3(&rightData);
+	globalRight = XMVector3Normalize(globalRight);
 
 	XMVECTOR localUp = XMVectorSet(0, 1, 0, 0);
 

@@ -99,6 +99,7 @@ void Game::CreateEntities()
 {
 	World* world = World::GetInstance();
 
+	
 	Entity* cube1 = world->Instantiate("cube1");
 	cube1->GetTransform()->SetPosition(XMFLOAT3(0, 0, 0));
 	XMFLOAT4 rot;
