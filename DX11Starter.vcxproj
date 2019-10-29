@@ -179,6 +179,7 @@
     <ClCompile Include="RigidBodyComponent.cpp" />
     <ClCompile Include="Rotator.cpp" />
     <ClCompile Include="SimpleShader.cpp" />
+    <ClCompile Include="TimedDestructor.cpp" />
     <ClCompile Include="Transform.cpp" />
     <ClCompile Include="World.cpp" />
   </ItemGroup>
@@ -199,6 +200,7 @@
     <ClInclude Include="RigidBodyComponent.h" />
     <ClInclude Include="Rotator.h" />
     <ClInclude Include="SimpleShader.h" />
+    <ClInclude Include="TimedDestructor.h" />
     <ClInclude Include="Transform.h" />
     <ClInclude Include="Vertex.h" />
     <ClInclude Include="World.h" />

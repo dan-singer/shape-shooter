@@ -3,6 +3,7 @@
 #include "MeshComponent.h"
 #include "Entity.h"
 #include <bullet/LinearMath/btVector3.h>
+#include "TimedDestructor.h"
 
 using namespace DirectX;
 
@@ -28,9 +29,14 @@ void Launcher::SpawnProjectile()
 	RigidBodyComponent* rb = projectile->AddComponent<RigidBodyComponent>();
 	rb->SetSphereCollider(1.0f);
 	rb->m_mass = 1.0f; // Make sure the projectile has a non-zero mass, otherwise it will not move
+	// Make the projectile be destroyed after 10 seconds
+	projectile->AddComponent<TimedDestructor>()->SetDuration(10.0f);
 	// Copy over the launcher's pos and rot as the starting pos and rot for the projectile
 	projectile->GetTransform()->SetPosition(transform->GetPosition());
 	projectile->GetTransform()->SetRotation(transform->GetRotation());
+	// Add a tag to this entity so enemy shapes can detect it
+	projectile->AddTag("player-shape");
+
 	// Call start on this projectile so the rigidbody is ready before applying an impulse
 	projectile->StartAllComponents();
 
