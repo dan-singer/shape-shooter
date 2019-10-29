@@ -9,6 +9,7 @@
 #include "Rotator.h"
 #include "RigidBodyComponent.h"
 #include "CollisionTester.h"
+#include "Launcher.h"
 
 // For the DirectX Math library
 using namespace DirectX;
@@ -100,16 +101,16 @@ void Game::CreateEntities()
 	World* world = World::GetInstance();
 
 	
-	Entity* cube1 = world->Instantiate("cube1");
-	cube1->GetTransform()->SetPosition(XMFLOAT3(0, 0, 0));
-	XMFLOAT4 rot;
-	XMStoreFloat4(&rot, XMQuaternionRotationRollPitchYaw(10.0f, 10.0f, 10.0f));
-	cube1->GetTransform()->SetRotation(rot);
-	cube1->AddComponent<MeshComponent>()->m_mesh = world->GetMesh("cube");
-	cube1->AddComponent<MaterialComponent>()->m_material = world->GetMaterial("metal");
-	RigidBodyComponent* rb = cube1->AddComponent<RigidBodyComponent>();
-	rb->SetBoxCollider(.5f, .5f, .5f);
-	rb->m_mass = 1.0f; // This has mass so it will be affected by gravity
+	//Entity* cube1 = world->Instantiate("cube1");
+	//cube1->GetTransform()->SetPosition(XMFLOAT3(0, 0, 0));
+	//XMFLOAT4 rot;
+	//XMStoreFloat4(&rot, XMQuaternionRotationRollPitchYaw(10.0f, 10.0f, 10.0f));
+	//cube1->GetTransform()->SetRotation(rot);
+	//cube1->AddComponent<MeshComponent>()->m_mesh = world->GetMesh("cube");
+	//cube1->AddComponent<MaterialComponent>()->m_material = world->GetMaterial("metal");
+	//RigidBodyComponent* rb = cube1->AddComponent<RigidBodyComponent>();
+	//rb->SetBoxCollider(.5f, .5f, .5f);
+	//rb->m_mass = 1.0f; // This has mass so it will be affected by gravity
 
 	Entity* ground = world->Instantiate("ground");
 	ground->GetTransform()->SetPosition(XMFLOAT3(0, -3, 0));
@@ -122,6 +123,11 @@ void Game::CreateEntities()
 	cc->UpdateProjectionMatrix((float)width / height);
 	camera->GetTransform()->SetPosition(XMFLOAT3(0, 0, -5));
 	camera->AddComponent<DebugMovement>();
+
+	Launcher* launcher = camera->AddComponent<Launcher>();
+	launcher->SetAmmoMaterial(world->GetMaterial("metal"));
+	launcher->AddAmmoMesh(world->GetMesh("cube"));
+
 	world->m_mainCamera = cc;
 
 	Entity* dirLight = world->Instantiate("DirLight1");
