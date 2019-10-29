@@ -78,6 +78,9 @@
     <ClCompile Include="TimedDestructor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="AmmoVisualizer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Vertex.h">
@@ -138,6 +141,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="TimedDestructor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="AmmoVisualizer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

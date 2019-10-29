@@ -28,6 +28,14 @@ public:
 	void AddAmmoMesh(Mesh* newMesh) { m_ammoMeshes.push_back(newMesh); }
 	void SetImpulseMagnitude(float magnitude) { m_impulseMagnitude = magnitude; }
 
+	Material* GetAmmoMaterial() { return m_ammoMaterial; }
+
+	// --------------------------------------------------------
+	// Returns a pointer to the  mesh that will is set to be fired
+	// from this launcher
+	// --------------------------------------------------------
+	Mesh* GetCurrentAmmoMesh() { return m_ammoMeshes[m_spawnIndex]; }
+
 	virtual void Start() override;
 	virtual void Tick(float deltaTime) override;
 

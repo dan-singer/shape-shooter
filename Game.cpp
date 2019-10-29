@@ -10,6 +10,7 @@
 #include "RigidBodyComponent.h"
 #include "CollisionTester.h"
 #include "Launcher.h"
+#include "AmmoVisualizer.h"
 
 // For the DirectX Math library
 using namespace DirectX;
@@ -134,9 +135,17 @@ void Game::CreateEntities()
 	launcher->AddAmmoMesh(world->GetMesh("cylinder"));
 	launcher->AddAmmoMesh(world->GetMesh("sphere"));
 
-
 	world->m_mainCamera = cc;
 
+
+	// Ammo Visualizer
+	Entity* ammoVis = world->Instantiate("ammo visualizer");
+	ammoVis->AddComponent<MeshComponent>();
+	ammoVis->AddComponent<MaterialComponent>();
+	ammoVis->AddComponent<AmmoVisualizer>()->SetParent(camera);
+	ammoVis->GetTransform()->SetScale(XMFLOAT3(.5f, .5f, .5f));
+
+	// Light Entities
 	Entity* dirLight = world->Instantiate("DirLight1");
 	LightComponent* dirLightComp = dirLight->AddComponent<LightComponent>();
 	dirLightComp->m_data.type = LightComponent::Directional;

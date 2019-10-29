@@ -1,5 +1,10 @@
 #pragma once
 #include "Component.h"
+
+// --------------------------------------------------------
+// Component which destroys it's owner entity after the 
+// duration has passed
+// --------------------------------------------------------
 class TimedDestructor : public Component
 {
 private:
@@ -12,8 +17,6 @@ public:
 	// --------------------------------------------------------
 	// Sets how long it will take for this component to destroy
 	// its owner
-	// @param float duration
-	// @returns float
 	// --------------------------------------------------------
 	void SetDuration(float duration) { m_duration = duration; }
 

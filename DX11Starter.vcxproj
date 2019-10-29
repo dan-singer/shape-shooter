@@ -162,6 +162,7 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="AmmoVisualizer.cpp" />
     <ClCompile Include="CameraComponent.cpp" />
     <ClCompile Include="CollisionTester.cpp" />
     <ClCompile Include="Component.cpp" />
@@ -184,6 +185,7 @@
     <ClCompile Include="World.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AmmoVisualizer.h" />
     <ClInclude Include="CameraComponent.h" />
     <ClInclude Include="CollisionTester.h" />
     <ClInclude Include="Component.h" />
