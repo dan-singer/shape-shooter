@@ -32,8 +32,7 @@ void AmmoVisualizer::Tick(float deltaTime)
 	XMFLOAT3 finalPos;
 	XMStoreFloat3(&finalPos, newPosition);
 	GetOwner()->GetTransform()->SetPosition(finalPos);
-
-
+	// TODO figure out why this is not working
 	GetOwner()->GetTransform()->SetRotation(m_parent->GetTransform()->GetRotation());
 
 	// Make the mesh match what the launcher will launch

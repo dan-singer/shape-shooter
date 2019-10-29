@@ -15,8 +15,7 @@ private:
 	Launcher* m_parentLauncher;
 	MeshComponent* m_meshComponent;
 	MaterialComponent* m_materialComponent;
-	//DirectX::XMFLOAT3 m_localOffset = DirectX::XMFLOAT3(-2.2f, -1.5f, 5);
-	DirectX::XMFLOAT3 m_localOffset = DirectX::XMFLOAT3(0, 0, 1);
+	DirectX::XMFLOAT3 m_localOffset = DirectX::XMFLOAT3(-2.2f, -1.0f, 4);
 
 public:
 
