@@ -25,19 +25,19 @@ void MovementComponent::Tick(float deltaTime)
 
 
 	//Apply our given transformations
-	if (GetAsyncKeyState('W') & 0x8000)
+	if (GetAsyncKeyState(moveForward) & 0x8000)
 	{
 		translation += g_forward;
 	}
-	if (GetAsyncKeyState('S') & 0x8000)
+	if (GetAsyncKeyState(moveBack) & 0x8000)
 	{
 		translation -= g_forward;
 	}
-	if (GetAsyncKeyState('D') & 0x8000)
+	if (GetAsyncKeyState(moveRight) & 0x8000)
 	{
 		translation += g_right;
 	}
-	if (GetAsyncKeyState('A') & 0x8000)
+	if (GetAsyncKeyState(moveLeft) & 0x8000)
 	{
 		translation -= g_right;
 	}
@@ -64,6 +64,8 @@ void MovementComponent::OnMouseMove(WPARAM buttonState, int x, int y)
 	XMStoreFloat4(&rotDeltaData, rotDelta);
 	GetOwner()->GetTransform()->Rotate(rotDeltaData); //Apply our new rotation to the camera
 
+
+	//Locking cursor to screen goes here
 	prevMousePos.x = x;
 	prevMousePos.y = y;
 }
@@ -86,4 +88,13 @@ void MovementComponent::SetSensitivity(float n_sense)
 float MovementComponent::GetSensitivity()
 {
 	return m_sensitivity;
+}
+
+//Allows for customization of controls because why not
+void MovementComponent::SetMovementControls(char forw, char back, char left, char right)
+{
+	moveForward = forw;
+	moveBack = back;
+	moveLeft = left;
+	moveRight = right;
 }
