@@ -13,16 +13,15 @@ private:
 	Material* m_ammoMaterial = nullptr;
 	std::vector<Mesh*> m_ammoMeshes;
 	int m_spawnIndex = 0;
-	int m_ammoCount = 3;
 	int m_totalSpawnedProjectiles = 0;
+	float m_impulseMagnitude = 100.0f;
 	void SpawnProjectile();
 public:
 	Launcher(Entity* entity) : Component(entity) { }
 
 	void SetAmmoMaterial(Material* material) { m_ammoMaterial = material; }
 	void AddAmmoMesh(Mesh* newMesh) { m_ammoMeshes.push_back(newMesh); }
-
-	int GetAmmoRemaining() { return m_ammoCount; }
+	void SetImpulseMagnitude(float magnitude) { m_impulseMagnitude = magnitude; }
 
 	virtual void Start() override;
 	virtual void Tick(float deltaTime) override;
