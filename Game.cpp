@@ -73,6 +73,9 @@ void Game::LoadResources()
 
 	// Meshes
 	world->CreateMesh("cube", "Assets/Models/cube.obj", device);
+	world->CreateMesh("cone", "Assets/Models/cone.obj", device);
+	world->CreateMesh("cylinder", "Assets/Models/cylinder.obj", device);
+	world->CreateMesh("sphere", "Assets/Models/sphere.obj", device);
 
 	// Shaders
 	SimpleVertexShader* vs = world->CreateVertexShader("vs", device, context, L"VertexShader.cso");
@@ -127,6 +130,10 @@ void Game::CreateEntities()
 	Launcher* launcher = camera->AddComponent<Launcher>();
 	launcher->SetAmmoMaterial(world->GetMaterial("metal"));
 	launcher->AddAmmoMesh(world->GetMesh("cube"));
+	launcher->AddAmmoMesh(world->GetMesh("cone"));
+	launcher->AddAmmoMesh(world->GetMesh("cylinder"));
+	launcher->AddAmmoMesh(world->GetMesh("sphere"));
+
 
 	world->m_mainCamera = cc;
 

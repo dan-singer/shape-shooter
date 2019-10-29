@@ -15,6 +15,11 @@ private:
 	int m_spawnIndex = 0;
 	int m_totalSpawnedProjectiles = 0;
 	float m_impulseMagnitude = 100.0f;
+
+	bool m_wasPrevPressed = false;
+	bool m_wasNextPressed = false;
+
+	void WrapSpawnIndex();
 	void SpawnProjectile();
 public:
 	Launcher(Entity* entity) : Component(entity) { }
