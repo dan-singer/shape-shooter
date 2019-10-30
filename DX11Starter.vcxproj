@@ -177,6 +177,7 @@
     <ClCompile Include="MeshComponent.cpp" />
     <ClCompile Include="RigidBodyComponent.cpp" />
     <ClCompile Include="Rotator.cpp" />
+    <ClCompile Include="ShapeSpawnerManager.cpp" />
     <ClCompile Include="SimpleShader.cpp" />
     <ClCompile Include="Transform.cpp" />
     <ClCompile Include="World.cpp" />
@@ -196,6 +197,7 @@
     <ClInclude Include="MeshComponent.h" />
     <ClInclude Include="RigidBodyComponent.h" />
     <ClInclude Include="Rotator.h" />
+    <ClInclude Include="ShapeSpawnerManager.h" />
     <ClInclude Include="SimpleShader.h" />
     <ClInclude Include="Transform.h" />
     <ClInclude Include="Vertex.h" />

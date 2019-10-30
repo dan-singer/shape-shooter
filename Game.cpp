@@ -9,6 +9,7 @@
 #include "Rotator.h"
 #include "RigidBodyComponent.h"
 #include "CollisionTester.h"
+#include "ShapeSpawnerManager.h"
 
 // For the DirectX Math library
 using namespace DirectX;
@@ -72,6 +73,11 @@ void Game::LoadResources()
 
 	// Meshes
 	world->CreateMesh("cube", "Assets/Models/cube.obj", device);
+	world->CreateMesh("cone", "Assets/Models/cone.obj", device);
+	world->CreateMesh("cylinder", "Assets/Models/cylinder.obj", device);
+	world->CreateMesh("helix", "Assets/Models/helix.obj", device);
+	world->CreateMesh("sphere", "Assets/Models/sphere.obj", device);
+	world->CreateMesh("torus", "Assets/Models/torus.obj", device);
 
 	// Shaders
 	SimpleVertexShader* vs = world->CreateVertexShader("vs", device, context, L"VertexShader.cso");
@@ -109,6 +115,9 @@ void Game::CreateEntities()
 	RigidBodyComponent* rb = cube1->AddComponent<RigidBodyComponent>();
 	rb->SetBoxCollider(.5f, .5f, .5f);
 	rb->m_mass = 1.0f; // This has mass so it will be affected by gravity
+
+	Entity* ShapeSpawnManager = world->Instantiate("ShapeSpawnManager");
+	ShapeSpawnerManagerComponent* ss = ShapeSpawnManager->AddComponent<ShapeSpawnerManagerComponent>();
 
 	Entity* ground = world->Instantiate("ground");
 	ground->GetTransform()->SetPosition(XMFLOAT3(0, -3, 0));
