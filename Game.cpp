@@ -80,6 +80,7 @@ void Game::LoadResources()
 
 	// Shaders
 	SimpleVertexShader* vs = world->CreateVertexShader("vs", device, context, L"VertexShader.cso");
+	SimplePixelShader* uiPs = world->CreatePixelShader("ui", device, context, L"UIPixelShader.cso");
 	SimplePixelShader* ps  = world->CreatePixelShader("ps", device, context, L"PixelShader.cso");
 
 	// Textures
@@ -97,6 +98,8 @@ void Game::LoadResources()
 
 	world->CreateMaterial("leather", vs, ps, world->GetTexture("leather"), world->GetSamplerState("main"));
 	world->CreateMaterial("metal", vs, ps, world->GetTexture("metal"), world->GetSamplerState("main"));
+	world->CreateMaterial("tempUI", vs, uiPs, world->GetTexture("metal"), world->GetSamplerState("main"));
+
 }
 
 
@@ -141,9 +144,11 @@ void Game::CreateEntities()
 	// Ammo Visualizer
 	Entity* ammoVis = world->Instantiate("ammo visualizer");
 	ammoVis->AddComponent<MeshComponent>();
-	ammoVis->AddComponent<MaterialComponent>();
+	ammoVis->AddComponent<MaterialComponent>()->m_material = world->GetMaterial("tempUI");
 	ammoVis->AddComponent<AmmoVisualizer>()->SetParent(camera);
 	ammoVis->GetTransform()->SetScale(XMFLOAT3(.5f, .5f, .5f));
+	ammoVis->GetTransform()->SetPosition(XMFLOAT3(-1.5f, -0.8f, 3));
+	ammoVis->AddTag("ui");
 
 	// Light Entities
 	Entity* dirLight = world->Instantiate("DirLight1");

@@ -31,8 +31,12 @@ void Launcher::SpawnProjectile()
 	rb->m_mass = 1.0f; // Make sure the projectile has a non-zero mass, otherwise it will not move
 	// Make the projectile be destroyed after 10 seconds
 	projectile->AddComponent<TimedDestructor>()->SetDuration(10.0f);
-	// Copy over the launcher's pos and rot as the starting pos and rot for the projectile
-	projectile->GetTransform()->SetPosition(transform->GetPosition());
+	// Spawn in front of the player
+	XMFLOAT3 spawnPos;
+	XMFLOAT3 posData = transform->GetPosition();
+	XMFLOAT3 fwdData = transform->GetForward();
+	XMStoreFloat3(&spawnPos, XMVectorAdd(XMLoadFloat3(&posData), XMLoadFloat3(&fwdData) * 5)); 
+	projectile->GetTransform()->SetPosition(spawnPos);
 	projectile->GetTransform()->SetRotation(transform->GetRotation());
 	// Add a tag to this entity so enemy shapes can detect it
 	projectile->AddTag("player-shape");

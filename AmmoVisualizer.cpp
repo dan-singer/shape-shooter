@@ -18,24 +18,6 @@ void AmmoVisualizer::Start()
 
 void AmmoVisualizer::Tick(float deltaTime)
 {
-	// Set the entity's position to always be in front of the camera
-	XMFLOAT3 parentPosData = m_parent->GetTransform()->GetPosition();
-	XMVECTOR parentPosition = XMLoadFloat3(&parentPosData);
-
-	XMVECTOR localOffset = XMLoadFloat3(&m_localOffset);
-	// Transform localOffset into global space
-	XMFLOAT4 parentRotData = m_parent->GetTransform()->GetRotation();
-	XMVECTOR parentRotation = XMLoadFloat4(&parentRotData);
-	XMVECTOR globalOffset = XMVector3Rotate(localOffset, parentRotation);
-
-	XMVECTOR newPosition = XMVectorAdd(parentPosition, globalOffset);
-	XMFLOAT3 finalPos;
-	XMStoreFloat3(&finalPos, newPosition);
-	GetOwner()->GetTransform()->SetPosition(finalPos);
-	// TODO figure out why this is not working
-	GetOwner()->GetTransform()->SetRotation(m_parent->GetTransform()->GetRotation());
-
 	// Make the mesh match what the launcher will launch
 	m_meshComponent->m_mesh = m_parentLauncher->GetCurrentAmmoMesh();
-	m_materialComponent->m_material = m_parentLauncher->GetAmmoMaterial();
 }
