@@ -57,6 +57,7 @@ void Game::Init()
 	// geometric primitives (points, lines or triangles) we want to draw.  
 	// Essentially: "What kind of shape should the GPU draw with our data?"
 	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	//ShowCursor(false);
 }
 
 // --------------------------------------------------------
@@ -113,6 +114,7 @@ void Game::CreateEntities()
 	MovementComponent* mc = camera->AddComponent<MovementComponent>();
 	mc->SetSpeed(1.2f); // ** SET SPEED FOR MOVEMENT HERE **
 	mc->SetSensitivity(0.002f); // ** SET SENSITIVITY OF CAMERA HERE **
+	mc->GetWindow(&hWnd, &width, &height); //Get window as a pointer
 	world->m_mainCamera = cc;
 
 	Entity* dirLight = world->Instantiate("DirLight1");
@@ -236,10 +238,40 @@ void Game::OnMouseUp(WPARAM buttonState, int x, int y)
 // --------------------------------------------------------
 void Game::OnMouseMove(WPARAM buttonState, int x, int y)
 {
-	World::GetInstance()->OnMouseMove(buttonState, x, y);
 	// Save the previous mouse position, so we have it for the future
-	prevMousePos.x = x;
-	prevMousePos.y = y;
+
+	//Lock Mouse to center of screen
+	World::GetInstance()->OnMouseMove(buttonState, x, y);
+
+	isTracking = false;
+
+	RECT windowLoc;
+	GetWindowRect(hWnd, &windowLoc);
+	SetCursorPos(windowLoc.left + (width / 2), windowLoc.left + (height / 2));
+
+	isTracking = true;
+
+	//Get location of window on our screen
+	/*isTracking = false;
+	RECT windowLoc;
+	GetWindowRect(hWnd, &windowLoc);
+
+	float windX = (windowLoc.left + (width / 2));
+	float windY = (windowLoc.top + (height / 2));
+
+	int dx = (windowLoc.left+x - windX); //Change in both x and y of mouse.
+	int dy = (windowLoc.top + y - windY);
+
+
+	SetCursorPos(windX, windY);
+
+	
+
+	isTracking = true;*/
+
+
+	prevMousePos.x = windowLoc.left + (width / 2);
+	prevMousePos.y = windowLoc.top + (height / 2);
 }
 
 // --------------------------------------------------------

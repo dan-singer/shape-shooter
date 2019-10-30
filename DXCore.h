@@ -49,6 +49,8 @@ public:
 	virtual void OnMouseUp	 (WPARAM buttonState, int x, int y) { }
 	virtual void OnMouseMove (WPARAM buttonState, int x, int y) { }
 	virtual void OnMouseWheel(float wheelDelta,   int x, int y) { }
+
+	bool isTracking = true; //Track mouse or not
 	
 protected:
 	HINSTANCE	hInstance;		// The handle to the application
@@ -77,6 +79,7 @@ private:
 	double perfCounterSeconds;
 	float totalTime;
 	float deltaTime;
+	
 	__int64 startTime;
 	__int64 currentTime;
 	__int64 previousTime;

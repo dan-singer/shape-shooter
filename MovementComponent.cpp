@@ -2,6 +2,7 @@
 #include "Transform.h"
 #include "Entity.h"
 
+
 using namespace DirectX;
 
 void MovementComponent::Start()
@@ -22,6 +23,8 @@ void MovementComponent::Tick(float deltaTime)
 	XMVECTOR g_forward = XMLoadFloat3(&fwdData);
 	XMVECTOR g_right = XMLoadFloat3(&rightData);
 	XMVECTOR translation = XMVectorSet(0, 0, 0, 0); //Stores the total amount the camera is moving this frame
+
+
 
 
 	//Apply our given transformations
@@ -56,18 +59,25 @@ void MovementComponent::Tick(float deltaTime)
 
 void MovementComponent::OnMouseMove(WPARAM buttonState, int x, int y)
 {
-	int dx = x - prevMousePos.x; //Change in both x and y of mouse.
-	int dy = y - prevMousePos.y;
+
+
+	RECT windowLoc;
+	GetWindowRect(*hWnd, &windowLoc);
+
+	int dx = windowLoc.left + x - prevMousePos.x;
+	int dy = windowLoc.top + y - prevMousePos.y;
+
+	printf("%d %d\n", dx, dy);
 
 	XMFLOAT4 rotDeltaData;
 	XMVECTOR rotDelta = XMQuaternionRotationRollPitchYaw(dy * m_sensitivity, dx * m_sensitivity, 0.0f); //Multiply difference by sensitivity, store in a quaternion
 	XMStoreFloat4(&rotDeltaData, rotDelta);
 	GetOwner()->GetTransform()->Rotate(rotDeltaData); //Apply our new rotation to the camera
 
-
 	//Locking cursor to screen goes here
-	prevMousePos.x = x;
-	prevMousePos.y = y;
+
+	prevMousePos.x = (windowLoc.left + (*width / 2));
+	prevMousePos.y = (windowLoc.top + (*height / 2));
 }
 
 void MovementComponent::SetSpeed(float n_speed)
@@ -88,6 +98,13 @@ void MovementComponent::SetSensitivity(float n_sense)
 float MovementComponent::GetSensitivity()
 {
 	return m_sensitivity;
+}
+
+void MovementComponent::GetWindow(HWND* win, unsigned int* w, unsigned int* h)
+{
+	hWnd = win;
+	width = w;
+	height = h;
 }
 
 //Allows for customization of controls because why not
