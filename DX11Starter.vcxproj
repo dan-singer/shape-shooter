@@ -162,6 +162,7 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="AmmoVisualizer.cpp" />
     <ClCompile Include="CameraComponent.cpp" />
     <ClCompile Include="CollisionTester.cpp" />
     <ClCompile Include="Component.cpp" />
@@ -169,6 +170,7 @@
     <ClCompile Include="DXCore.cpp" />
     <ClCompile Include="Entity.cpp" />
     <ClCompile Include="Game.cpp" />
+    <ClCompile Include="Launcher.cpp" />
     <ClCompile Include="LightComponent.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Material.cpp" />
@@ -178,10 +180,12 @@
     <ClCompile Include="RigidBodyComponent.cpp" />
     <ClCompile Include="Rotator.cpp" />
     <ClCompile Include="SimpleShader.cpp" />
+    <ClCompile Include="TimedDestructor.cpp" />
     <ClCompile Include="Transform.cpp" />
     <ClCompile Include="World.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AmmoVisualizer.h" />
     <ClInclude Include="CameraComponent.h" />
     <ClInclude Include="CollisionTester.h" />
     <ClInclude Include="Component.h" />
@@ -189,6 +193,7 @@
     <ClInclude Include="DXCore.h" />
     <ClInclude Include="Entity.h" />
     <ClInclude Include="Game.h" />
+    <ClInclude Include="Launcher.h" />
     <ClInclude Include="LightComponent.h" />
     <ClInclude Include="Material.h" />
     <ClInclude Include="MaterialComponent.h" />
@@ -197,6 +202,7 @@
     <ClInclude Include="RigidBodyComponent.h" />
     <ClInclude Include="Rotator.h" />
     <ClInclude Include="SimpleShader.h" />
+    <ClInclude Include="TimedDestructor.h" />
     <ClInclude Include="Transform.h" />
     <ClInclude Include="Vertex.h" />
     <ClInclude Include="World.h" />
@@ -211,6 +217,10 @@
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="UIPixelShader.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
     </FxCompile>
     <FxCompile Include="VertexShader.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>

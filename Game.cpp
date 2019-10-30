@@ -9,6 +9,8 @@
 #include "Rotator.h"
 #include "RigidBodyComponent.h"
 #include "CollisionTester.h"
+#include "Launcher.h"
+#include "AmmoVisualizer.h"
 
 // For the DirectX Math library
 using namespace DirectX;
@@ -72,9 +74,13 @@ void Game::LoadResources()
 
 	// Meshes
 	world->CreateMesh("cube", "Assets/Models/cube.obj", device);
+	world->CreateMesh("cone", "Assets/Models/cone.obj", device);
+	world->CreateMesh("cylinder", "Assets/Models/cylinder.obj", device);
+	world->CreateMesh("sphere", "Assets/Models/sphere.obj", device);
 
 	// Shaders
 	SimpleVertexShader* vs = world->CreateVertexShader("vs", device, context, L"VertexShader.cso");
+	SimplePixelShader* uiPs = world->CreatePixelShader("ui", device, context, L"UIPixelShader.cso");
 	SimplePixelShader* ps  = world->CreatePixelShader("ps", device, context, L"PixelShader.cso");
 
 	// Textures
@@ -92,6 +98,8 @@ void Game::LoadResources()
 
 	world->CreateMaterial("leather", vs, ps, world->GetTexture("leather"), world->GetSamplerState("main"));
 	world->CreateMaterial("metal", vs, ps, world->GetTexture("metal"), world->GetSamplerState("main"));
+	world->CreateMaterial("metalUI", vs, uiPs, world->GetTexture("metal"), world->GetSamplerState("main"));
+
 }
 
 
@@ -99,16 +107,17 @@ void Game::CreateEntities()
 {
 	World* world = World::GetInstance();
 
-	Entity* cube1 = world->Instantiate("cube1");
-	cube1->GetTransform()->SetPosition(XMFLOAT3(0, 0, 0));
-	XMFLOAT4 rot;
-	XMStoreFloat4(&rot, XMQuaternionRotationRollPitchYaw(10.0f, 10.0f, 10.0f));
-	cube1->GetTransform()->SetRotation(rot);
-	cube1->AddComponent<MeshComponent>()->m_mesh = world->GetMesh("cube");
-	cube1->AddComponent<MaterialComponent>()->m_material = world->GetMaterial("metal");
-	RigidBodyComponent* rb = cube1->AddComponent<RigidBodyComponent>();
-	rb->SetBoxCollider(.5f, .5f, .5f);
-	rb->m_mass = 1.0f; // This has mass so it will be affected by gravity
+	
+	//Entity* cube1 = world->Instantiate("cube1");
+	//cube1->GetTransform()->SetPosition(XMFLOAT3(0, 0, 0));
+	//XMFLOAT4 rot;
+	//XMStoreFloat4(&rot, XMQuaternionRotationRollPitchYaw(10.0f, 10.0f, 10.0f));
+	//cube1->GetTransform()->SetRotation(rot);
+	//cube1->AddComponent<MeshComponent>()->m_mesh = world->GetMesh("cube");
+	//cube1->AddComponent<MaterialComponent>()->m_material = world->GetMaterial("metal");
+	//RigidBodyComponent* rb = cube1->AddComponent<RigidBodyComponent>();
+	//rb->SetBoxCollider(.5f, .5f, .5f);
+	//rb->m_mass = 1.0f; // This has mass so it will be affected by gravity
 
 	Entity* ground = world->Instantiate("ground");
 	ground->GetTransform()->SetPosition(XMFLOAT3(0, -3, 0));
@@ -121,8 +130,27 @@ void Game::CreateEntities()
 	cc->UpdateProjectionMatrix((float)width / height);
 	camera->GetTransform()->SetPosition(XMFLOAT3(0, 0, -5));
 	camera->AddComponent<DebugMovement>();
+
+	Launcher* launcher = camera->AddComponent<Launcher>();
+	launcher->SetAmmoMaterial(world->GetMaterial("metal"));
+	launcher->AddAmmoMesh(world->GetMesh("cube"));
+	launcher->AddAmmoMesh(world->GetMesh("cone"));
+	launcher->AddAmmoMesh(world->GetMesh("cylinder"));
+	launcher->AddAmmoMesh(world->GetMesh("sphere"));
+
 	world->m_mainCamera = cc;
 
+
+	// Ammo Visualizer
+	Entity* ammoVis = world->Instantiate("ammo visualizer");
+	ammoVis->AddComponent<MeshComponent>();
+	ammoVis->AddComponent<MaterialComponent>()->m_material = world->GetMaterial("metalUI");
+	ammoVis->AddComponent<AmmoVisualizer>()->SetParent(camera);
+	ammoVis->GetTransform()->SetScale(XMFLOAT3(.5f, .5f, .5f));
+	ammoVis->GetTransform()->SetPosition(XMFLOAT3(-1.5f, -0.8f, 3));
+	ammoVis->AddTag("ui");
+
+	// Light Entities
 	Entity* dirLight = world->Instantiate("DirLight1");
 	LightComponent* dirLightComp = dirLight->AddComponent<LightComponent>();
 	dirLightComp->m_data.type = LightComponent::Directional;
