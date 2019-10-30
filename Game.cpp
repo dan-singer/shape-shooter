@@ -98,7 +98,7 @@ void Game::LoadResources()
 
 	world->CreateMaterial("leather", vs, ps, world->GetTexture("leather"), world->GetSamplerState("main"));
 	world->CreateMaterial("metal", vs, ps, world->GetTexture("metal"), world->GetSamplerState("main"));
-	world->CreateMaterial("tempUI", vs, uiPs, world->GetTexture("metal"), world->GetSamplerState("main"));
+	world->CreateMaterial("metalUI", vs, uiPs, world->GetTexture("metal"), world->GetSamplerState("main"));
 
 }
 
@@ -144,7 +144,7 @@ void Game::CreateEntities()
 	// Ammo Visualizer
 	Entity* ammoVis = world->Instantiate("ammo visualizer");
 	ammoVis->AddComponent<MeshComponent>();
-	ammoVis->AddComponent<MaterialComponent>()->m_material = world->GetMaterial("tempUI");
+	ammoVis->AddComponent<MaterialComponent>()->m_material = world->GetMaterial("metalUI");
 	ammoVis->AddComponent<AmmoVisualizer>()->SetParent(camera);
 	ammoVis->GetTransform()->SetScale(XMFLOAT3(.5f, .5f, .5f));
 	ammoVis->GetTransform()->SetPosition(XMFLOAT3(-1.5f, -0.8f, 3));

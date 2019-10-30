@@ -59,10 +59,12 @@ void DebugMovement::OnMouseMove(WPARAM buttonState, int x, int y)
 	int dx = x - prevMousePos.x;
 	int dy = y - prevMousePos.y;
 
-	XMFLOAT4 rotDeltaData;
-	XMVECTOR rotDelta = XMQuaternionRotationRollPitchYaw(dy * .001f, dx * 0.001f, 0.0f);
-	XMStoreFloat4(&rotDeltaData, rotDelta);
-	GetOwner()->GetTransform()->Rotate(rotDeltaData);
+	XMFLOAT4 newRotData;
+	m_pitch += dy * 0.001f;
+	m_yaw += dx * 0.001f;
+	XMVECTOR newRot = XMQuaternionRotationRollPitchYaw(m_pitch, m_yaw, 0);
+	XMStoreFloat4(&newRotData, newRot);
+	GetOwner()->GetTransform()->SetRotation(newRotData);
 
 	prevMousePos.x = x; 
 	prevMousePos.y = y;
