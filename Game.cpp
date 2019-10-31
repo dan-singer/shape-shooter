@@ -95,6 +95,7 @@ void Game::LoadResources()
 	// Textures
 	world->CreateTexture("leather", device, context, L"Assets/Textures/Leather.jpg");
 	world->CreateTexture("metal", device, context, L"Assets/Textures/BareMetal.png");
+	world->CreateTexture("velvet_normal", device, context, L"Assets/Textures/Velvet_N.jpg");
 
 	// Create the sampler state
 	D3D11_SAMPLER_DESC samplerDesc = {};
@@ -105,10 +106,9 @@ void Game::LoadResources()
 	samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
 	world->CreateSamplerState("main", &samplerDesc, device);
 
-	world->CreateMaterial("leather", vs, ps, world->GetTexture("leather"), world->GetSamplerState("main"));
-	world->CreateMaterial("metal", vs, ps, world->GetTexture("metal"), world->GetSamplerState("main"));
-	world->CreateMaterial("metalUI", vs, uiPs, world->GetTexture("metal"), world->GetSamplerState("main"));
-
+	world->CreateMaterial("leather", vs, ps, world->GetTexture("leather"), world->GetTexture("velvet_normal"), world->GetSamplerState("main"));
+	world->CreateMaterial("metal", vs, ps, world->GetTexture("metal"), world->GetTexture("velvet_normal"), world->GetSamplerState("main"));
+	world->CreateMaterial("metalUI", vs, uiPs, world->GetTexture("metal"), nullptr, world->GetSamplerState("main"));
 }
 
 
