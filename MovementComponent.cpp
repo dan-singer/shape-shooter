@@ -56,7 +56,7 @@ void MovementComponent::Tick(float deltaTime)
 	translation *= deltaTime;
 	translation *= m_speed; //Multiply that by our speed (1 < speed < 2 for decent not terrible speedy movement)
 
-	XMVECTOR newPos = translation + position; //Add it to the camera's position
+	XMVECTOR newPos = XMVectorAdd(translation, position); //Add it to the camera's position
 
 	XMFLOAT3 newPosData;
 	XMStoreFloat3(&newPosData, newPos);
@@ -68,7 +68,7 @@ void MovementComponent::OnMouseMove(WPARAM buttonState, int x, int y)
 	int dx = x - prevMousePos.x;
 	int dy = y - prevMousePos.y;
 
-	printf("%d %d\n", dx, dy);
+	// printf("%d %d\n", dx, dy);
 
 	m_yaw += dx * m_sensitivity;
 	m_pitch += dy * m_sensitivity;

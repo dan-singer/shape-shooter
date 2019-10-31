@@ -8,6 +8,11 @@
 #include "MovementComponent.h"
 #include "World.h"
 #include "Rotator.h"
+#include "RigidBodyComponent.h"
+#include "CollisionTester.h"
+#include "ShapeSpawnerManager.h"
+#include "Launcher.h"
+#include "AmmoVisualizer.h"
 
 // For the DirectX Math library
 using namespace DirectX;
@@ -76,9 +81,15 @@ void Game::LoadResources()
 
 	// Meshes
 	world->CreateMesh("cube", "Assets/Models/cube.obj", device);
+	world->CreateMesh("cone", "Assets/Models/cone.obj", device);
+	world->CreateMesh("cylinder", "Assets/Models/cylinder.obj", device);
+	world->CreateMesh("helix", "Assets/Models/helix.obj", device);
+	world->CreateMesh("sphere", "Assets/Models/sphere.obj", device);
+	world->CreateMesh("torus", "Assets/Models/torus.obj", device);
 
 	// Shaders
 	SimpleVertexShader* vs = world->CreateVertexShader("vs", device, context, L"VertexShader.cso");
+	SimplePixelShader* uiPs = world->CreatePixelShader("ui", device, context, L"UIPixelShader.cso");
 	SimplePixelShader* ps  = world->CreatePixelShader("ps", device, context, L"PixelShader.cso");
 
 	// Textures
@@ -96,6 +107,8 @@ void Game::LoadResources()
 
 	world->CreateMaterial("leather", vs, ps, world->GetTexture("leather"), world->GetSamplerState("main"));
 	world->CreateMaterial("metal", vs, ps, world->GetTexture("metal"), world->GetSamplerState("main"));
+	world->CreateMaterial("metalUI", vs, uiPs, world->GetTexture("metal"), world->GetSamplerState("main"));
+
 }
 
 
@@ -103,13 +116,8 @@ void Game::CreateEntities()
 {
 	World* world = World::GetInstance();
 
-	Entity* cube1 = world->Instantiate("cube1");
-	cube1->GetTransform()->SetPosition(XMFLOAT3(0, 0, 0));
-	cube1->AddComponent<MeshComponent>()->m_mesh = world->GetMesh("cube");
-	cube1->AddComponent<MaterialComponent>()->m_material = world->GetMaterial("metal");
-	Rotator* rot = cube1->AddComponent<Rotator>();
-	rot->eulerDelta.x = 1.0f;
-	rot->eulerDelta.y = 1.0f;
+	Entity* ShapeSpawnManager = world->Instantiate("ShapeSpawnManager");
+	ShapeSpawnerManagerComponent* ss = ShapeSpawnManager->AddComponent<ShapeSpawnerManagerComponent>();
 
 	Entity* camera = world->Instantiate("Cam");
 	CameraComponent* cc = camera->AddComponent<CameraComponent>();
@@ -119,14 +127,37 @@ void Game::CreateEntities()
 	mc->SetSpeed(1.5f); // ** SET SPEED FOR MOVEMENT HERE **
 	mc->SetSensitivity(0.002f); // ** SET SENSITIVITY OF CAMERA HERE **
 	mc->GetWindow(&hWnd, &width, &height); //Get window as a pointer
+
+	Launcher* launcher = camera->AddComponent<Launcher>();
+	launcher->SetAmmoMaterial(world->GetMaterial("metal"));
+	launcher->AddAmmoMesh(world->GetMesh("cube"));
+	launcher->AddAmmoMesh(world->GetMesh("cone"));
+	launcher->AddAmmoMesh(world->GetMesh("cylinder"));
+	launcher->AddAmmoMesh(world->GetMesh("sphere"));
+	launcher->AddAmmoMesh(world->GetMesh("helix"));
+	launcher->AddAmmoMesh(world->GetMesh("torus"));
+
+
 	world->m_mainCamera = cc;
 
+
+	// Ammo Visualizer
+	Entity* ammoVis = world->Instantiate("ammo visualizer");
+	ammoVis->AddComponent<MeshComponent>();
+	ammoVis->AddComponent<MaterialComponent>()->m_material = world->GetMaterial("metalUI");
+	ammoVis->AddComponent<AmmoVisualizer>()->SetParent(camera);
+	ammoVis->GetTransform()->SetScale(XMFLOAT3(.5f, .5f, .5f));
+	ammoVis->GetTransform()->SetPosition(XMFLOAT3(-1.5f, -0.8f, 3));
+	ammoVis->AddTag("ui");
+
+	// Light Entities
 	Entity* dirLight = world->Instantiate("DirLight1");
 	LightComponent* dirLightComp = dirLight->AddComponent<LightComponent>();
 	dirLightComp->m_data.type = LightComponent::Directional;
 	dirLightComp->m_data.color = XMFLOAT3(1.0f, 1.0f, 1.0f);
 	dirLightComp->m_data.intensity = 1.0f;
 	
+	/*
 	Entity* pointLight = world->Instantiate("PointLight1");
 	LightComponent* pointLightComp = pointLight->AddComponent<LightComponent>();
 	pointLightComp->m_data.type = LightComponent::Point;
@@ -144,6 +175,7 @@ void Game::CreateEntities()
 	XMFLOAT4 spotLightRot;
 	XMStoreFloat4(&spotLightRot, XMQuaternionRotationRollPitchYaw(0, 90.0f, 0));
 	spotLight->GetTransform()->SetRotation(spotLightRot);
+	*/
 }
 
 // --------------------------------------------------------

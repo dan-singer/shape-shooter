@@ -6,6 +6,8 @@ class DebugMovement : public Component
 {
 private:
 	DirectX::XMFLOAT2 prevMousePos;
+	float m_pitch = 0.0f;
+	float m_yaw = 0.0f;
 public:
 	DebugMovement(Entity* entity) : Component(entity) { }
 

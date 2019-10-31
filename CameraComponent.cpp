@@ -17,9 +17,12 @@ void CameraComponent::Tick(float deltaTime)
 
 	XMFLOAT3 pos = transform->GetPosition();
 	XMFLOAT3 fwd = transform->GetForward();
+	XMFLOAT3 right = transform->GetRight();
+
+	XMVECTOR up = -XMVector3Cross(XMLoadFloat3(&fwd), XMLoadFloat3(&right));
 
 	XMVECTOR globalForward = XMLoadFloat3(&fwd);
-	XMMATRIX view = XMMatrixLookToLH(XMLoadFloat3(&pos), globalForward, upAxis);
+	XMMATRIX view = XMMatrixLookToLH(XMLoadFloat3(&pos), globalForward, up);
 	XMStoreFloat4x4(&m_view, XMMatrixTranspose(view));
 }
 
