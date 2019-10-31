@@ -31,5 +31,5 @@ SamplerState samplerState : register(s0);
 // --------------------------------------------------------
 float4 main(VertexToPixel input) : SV_TARGET
 {
-	return diffuseTexture.Sample(samplerState, input.uv);
+	return float4(0,0,0,1);
 }
