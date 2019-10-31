@@ -35,7 +35,7 @@ void Launcher::SpawnProjectile()
 	XMFLOAT3 spawnPos;
 	XMFLOAT3 posData = transform->GetPosition();
 	XMFLOAT3 fwdData = transform->GetForward();
-	XMStoreFloat3(&spawnPos, XMVectorAdd(XMLoadFloat3(&posData), XMLoadFloat3(&fwdData) * 5)); 
+	XMStoreFloat3(&spawnPos, XMVectorAdd(XMLoadFloat3(&posData), XMLoadFloat3(&fwdData) * 2.5f)); 
 	projectile->GetTransform()->SetPosition(spawnPos);
 	projectile->GetTransform()->SetRotation(transform->GetRotation());
 	// Add a tag to this entity so enemy shapes can detect it

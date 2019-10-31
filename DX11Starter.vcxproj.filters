@@ -72,6 +72,9 @@
     <ClCompile Include="CollisionTester.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ShapeSpawnerManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="Launcher.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -79,6 +82,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="AmmoVisualizer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="EnemyShape.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -137,6 +143,9 @@
     <ClInclude Include="CollisionTester.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ShapeSpawnerManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="Launcher.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -144,6 +153,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="AmmoVisualizer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="EnemyShape.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

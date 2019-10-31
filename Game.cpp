@@ -9,6 +9,7 @@
 #include "Rotator.h"
 #include "RigidBodyComponent.h"
 #include "CollisionTester.h"
+#include "ShapeSpawnerManager.h"
 #include "Launcher.h"
 #include "AmmoVisualizer.h"
 
@@ -76,7 +77,9 @@ void Game::LoadResources()
 	world->CreateMesh("cube", "Assets/Models/cube.obj", device);
 	world->CreateMesh("cone", "Assets/Models/cone.obj", device);
 	world->CreateMesh("cylinder", "Assets/Models/cylinder.obj", device);
+	world->CreateMesh("helix", "Assets/Models/helix.obj", device);
 	world->CreateMesh("sphere", "Assets/Models/sphere.obj", device);
+	world->CreateMesh("torus", "Assets/Models/torus.obj", device);
 
 	// Shaders
 	SimpleVertexShader* vs = world->CreateVertexShader("vs", device, context, L"VertexShader.cso");
@@ -107,23 +110,8 @@ void Game::CreateEntities()
 {
 	World* world = World::GetInstance();
 
-	
-	//Entity* cube1 = world->Instantiate("cube1");
-	//cube1->GetTransform()->SetPosition(XMFLOAT3(0, 0, 0));
-	//XMFLOAT4 rot;
-	//XMStoreFloat4(&rot, XMQuaternionRotationRollPitchYaw(10.0f, 10.0f, 10.0f));
-	//cube1->GetTransform()->SetRotation(rot);
-	//cube1->AddComponent<MeshComponent>()->m_mesh = world->GetMesh("cube");
-	//cube1->AddComponent<MaterialComponent>()->m_material = world->GetMaterial("metal");
-	//RigidBodyComponent* rb = cube1->AddComponent<RigidBodyComponent>();
-	//rb->SetBoxCollider(.5f, .5f, .5f);
-	//rb->m_mass = 1.0f; // This has mass so it will be affected by gravity
-
-	Entity* ground = world->Instantiate("ground");
-	ground->GetTransform()->SetPosition(XMFLOAT3(0, -3, 0));
-	ground->AddComponent<MeshComponent>()->m_mesh = world->GetMesh("cube");
-	ground->AddComponent<MaterialComponent>()->m_material = world->GetMaterial("metal");
-	ground->AddComponent<RigidBodyComponent>()->SetBoxCollider(.5f, .5f, .5f);
+	Entity* ShapeSpawnManager = world->Instantiate("ShapeSpawnManager");
+	ShapeSpawnerManagerComponent* ss = ShapeSpawnManager->AddComponent<ShapeSpawnerManagerComponent>();
 
 	Entity* camera = world->Instantiate("Cam");
 	CameraComponent* cc = camera->AddComponent<CameraComponent>();
@@ -137,6 +125,9 @@ void Game::CreateEntities()
 	launcher->AddAmmoMesh(world->GetMesh("cone"));
 	launcher->AddAmmoMesh(world->GetMesh("cylinder"));
 	launcher->AddAmmoMesh(world->GetMesh("sphere"));
+	launcher->AddAmmoMesh(world->GetMesh("helix"));
+	launcher->AddAmmoMesh(world->GetMesh("torus"));
+
 
 	world->m_mainCamera = cc;
 
@@ -157,6 +148,7 @@ void Game::CreateEntities()
 	dirLightComp->m_data.color = XMFLOAT3(1.0f, 1.0f, 1.0f);
 	dirLightComp->m_data.intensity = 1.0f;
 	
+	/*
 	Entity* pointLight = world->Instantiate("PointLight1");
 	LightComponent* pointLightComp = pointLight->AddComponent<LightComponent>();
 	pointLightComp->m_data.type = LightComponent::Point;
@@ -174,6 +166,7 @@ void Game::CreateEntities()
 	XMFLOAT4 spotLightRot;
 	XMStoreFloat4(&spotLightRot, XMQuaternionRotationRollPitchYaw(0, 90.0f, 0));
 	spotLight->GetTransform()->SetRotation(spotLightRot);
+	*/
 }
 
 // --------------------------------------------------------
