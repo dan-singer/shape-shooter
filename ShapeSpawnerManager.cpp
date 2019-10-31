@@ -43,7 +43,7 @@ void ShapeSpawnerManagerComponent::spawnShapes()
 	if (rand() % 100000 == 0)
 	{
 		Entity* cone1 = world->Instantiate("cone1");
-		cone1->GetTransform()->SetPosition(XMFLOAT3(rand() % 10 - 5, rand() % 10 - 5, rand() % 10 - 5));
+		cone1->GetTransform()->SetPosition(XMFLOAT3(rand() % 10 - 5, rand() % 10 - 5, rand() % 5));
 		cone1->AddComponent<MeshComponent>()->m_mesh = world->GetMesh("cone");
 		cone1->AddComponent<MaterialComponent>()->m_material = world->GetMaterial("metal");
 		cone1->AddComponent<RigidBodyComponent>()->SetBoxCollider(.5f, .5f, .5f);
@@ -58,7 +58,7 @@ void ShapeSpawnerManagerComponent::spawnShapes()
 	if (rand() % 100000 == 0)
 	{
 		Entity* cylinder1 = world->Instantiate("cylinder1");
-		cylinder1->GetTransform()->SetPosition(XMFLOAT3(rand() % 10 - 5, rand() % 10 - 5, rand() % 10 - 5));
+		cylinder1->GetTransform()->SetPosition(XMFLOAT3(rand() % 10 - 5, rand() % 10 - 5, rand() % 5));
 		cylinder1->AddComponent<MeshComponent>()->m_mesh = world->GetMesh("cylinder");
 		cylinder1->AddComponent<MaterialComponent>()->m_material = world->GetMaterial("metal");
 		cylinder1->AddComponent<RigidBodyComponent>()->SetBoxCollider(.5f, .5f, .5f);
@@ -73,7 +73,7 @@ void ShapeSpawnerManagerComponent::spawnShapes()
 	if (rand() % 100000 == 0)
 	{
 		Entity* helix1 = world->Instantiate("helix1");
-		helix1->GetTransform()->SetPosition(XMFLOAT3(rand() % 10 - 5, rand() % 10 - 5, rand() % 10 - 5));
+		helix1->GetTransform()->SetPosition(XMFLOAT3(rand() % 10 - 5, rand() % 10 - 5, rand() % 5));
 		helix1->AddComponent<MeshComponent>()->m_mesh = world->GetMesh("helix");
 		helix1->AddComponent<MaterialComponent>()->m_material = world->GetMaterial("metal");
 		helix1->AddComponent<RigidBodyComponent>()->SetBoxCollider(.5f, .5f, .5f);
@@ -88,7 +88,7 @@ void ShapeSpawnerManagerComponent::spawnShapes()
 	if (rand() % 100000 == 0)
 	{
 		Entity* sphere1 = world->Instantiate("sphere1");
-		sphere1->GetTransform()->SetPosition(XMFLOAT3(rand() % 10 - 5, rand() % 10 - 5, rand() % 10 - 5));
+		sphere1->GetTransform()->SetPosition(XMFLOAT3(rand() % 10 - 5, rand() % 10 - 5, rand() % 5));
 		sphere1->AddComponent<MeshComponent>()->m_mesh = world->GetMesh("sphere");
 		sphere1->AddComponent<MaterialComponent>()->m_material = world->GetMaterial("metal");
 		sphere1->AddComponent<RigidBodyComponent>()->SetBoxCollider(.5f, .5f, .5f);
@@ -103,7 +103,7 @@ void ShapeSpawnerManagerComponent::spawnShapes()
 	if (rand() % 100000 == 0)
 	{
 		Entity* torus1 = world->Instantiate("torus1");
-		torus1->GetTransform()->SetPosition(XMFLOAT3(rand() % 10 - 5, rand() % 10 - 5, rand() % 10 - 5));
+		torus1->GetTransform()->SetPosition(XMFLOAT3(rand() % 10 - 5, rand() % 10 - 5, rand() % 5));
 		torus1->AddComponent<MeshComponent>()->m_mesh = world->GetMesh("torus");
 		torus1->AddComponent<MaterialComponent>()->m_material = world->GetMaterial("metal");
 		torus1->AddComponent<RigidBodyComponent>()->SetBoxCollider(.5f, .5f, .5f);

@@ -3,6 +3,8 @@
 
 class EnemyShape : public Component
 {
+private:
+	float m_trackSpeed = 1.0f;
 public:
 	EnemyShape(Entity* entity) : Component(entity) { }
 
