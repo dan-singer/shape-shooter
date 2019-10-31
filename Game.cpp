@@ -5,6 +5,7 @@
 #include "Transform.h"
 #include "MaterialComponent.h"
 #include "DebugMovement.h"
+#include "MovementComponent.h"
 #include "World.h"
 #include "Rotator.h"
 #include "RigidBodyComponent.h"
@@ -54,6 +55,10 @@ Game::~Game()
 // --------------------------------------------------------
 void Game::Init()
 {
+	GetClientRect(hWnd, &rect);
+
+	SetCursorPos(rect.left + (width / 2), rect.top + 25 + (height / 2));
+
 	LoadResources();
 	CreateEntities();	
 	World::GetInstance()->Start();
@@ -61,6 +66,7 @@ void Game::Init()
 	// geometric primitives (points, lines or triangles) we want to draw.  
 	// Essentially: "What kind of shape should the GPU draw with our data?"
 	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	//ShowCursor(false);
 }
 
 // --------------------------------------------------------
@@ -117,7 +123,10 @@ void Game::CreateEntities()
 	CameraComponent* cc = camera->AddComponent<CameraComponent>();
 	cc->UpdateProjectionMatrix((float)width / height);
 	camera->GetTransform()->SetPosition(XMFLOAT3(0, 0, -5));
-	camera->AddComponent<DebugMovement>();
+	MovementComponent* mc = camera->AddComponent<MovementComponent>();
+	mc->SetSpeed(1.5f); // ** SET SPEED FOR MOVEMENT HERE **
+	mc->SetSensitivity(0.002f); // ** SET SENSITIVITY OF CAMERA HERE **
+	mc->GetWindow(&hWnd, &width, &height); //Get window as a pointer
 
 	Launcher* launcher = camera->AddComponent<Launcher>();
 	launcher->SetAmmoMaterial(world->GetMaterial("metal"));
@@ -185,6 +194,30 @@ void Game::OnResize()
 // --------------------------------------------------------
 void Game::Update(float deltaTime, float totalTime)
 {
+	//Confine mouse to window
+	GetClientRect(hWnd, &rect);
+
+
+	//Calculate points 
+	POINT ul;
+	ul.x = rect.left;
+	ul.y = rect.top;
+
+	POINT rl;
+	rl.x = rect.right;
+	rl.y = rect.bottom;
+
+	MapWindowPoints(hWnd, nullptr, &ul, 1);
+	MapWindowPoints(hWnd, nullptr, &rl, 1);
+
+	rect.left = ul.x;
+	rect.top = ul.y;
+
+	rect.right = rl.x;
+	rect.bottom = rl.y;
+
+	ClipCursor(&rect);
+
 	// Quit if the escape key is pressed
 	if (GetAsyncKeyState(VK_ESCAPE))
 		Quit();
@@ -265,8 +298,20 @@ void Game::OnMouseUp(WPARAM buttonState, int x, int y)
 // --------------------------------------------------------
 void Game::OnMouseMove(WPARAM buttonState, int x, int y)
 {
-	World::GetInstance()->OnMouseMove(buttonState, x, y);
 	// Save the previous mouse position, so we have it for the future
+
+	//Lock Mouse to center of screen
+	World::GetInstance()->OnMouseMove(buttonState, x, y);
+
+	/*isTracking = false;
+
+	RECT windowLoc;
+	GetWindowRect(hWnd, &windowLoc);
+	SetCursorPos(windowLoc.left + (width / 2), windowLoc.left + (height / 2));
+
+	isTracking = true;*/
+
+
 	prevMousePos.x = x;
 	prevMousePos.y = y;
 }

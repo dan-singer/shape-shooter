@@ -33,7 +33,7 @@ private:
 	// Initialization helper methods - feel free to customize, combine, etc.
 	void LoadResources(); 
 	void CreateEntities();
-
+	RECT rect; //struct representing the rectangle that is our window
 	// Keeps track of the old mouse position.  Useful for 
 	// determining how far the mouse moved in a single frame.
 	POINT prevMousePos;
