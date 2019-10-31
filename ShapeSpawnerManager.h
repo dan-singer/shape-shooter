@@ -2,7 +2,7 @@
 #include "Component.h"
 #include <stdlib.h>
 #include <time.h>
-
+#include <DirectXMath.h>
 
 class ShapeSpawnerManagerComponent : public Component
 {

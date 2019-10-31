@@ -1,5 +1,7 @@
 #include "Entity.h"
 
+using namespace DirectX;
+
 Entity::Entity(const std::string& name) : m_name(name)
 {
 	m_transform = AddComponent<Transform>();
@@ -12,7 +14,14 @@ void Entity::PrepareMaterial(DirectX::XMFLOAT4X4 view, DirectX::XMFLOAT4X4 proje
 	SimplePixelShader* ps = material->GetPixelShader();
 
 	vs->SetMatrix4x4("world", GetTransform()->GetWorldMatrix());
-	vs->SetMatrix4x4("view", view);
+	if (HasTag("ui")) {
+		XMFLOAT4X4 identity;
+		XMStoreFloat4x4(&identity, XMMatrixIdentity());
+		vs->SetMatrix4x4("view", identity);
+	}
+	else {
+		vs->SetMatrix4x4("view", view);
+	}
 	vs->SetMatrix4x4("projection", projection);
 	vs->SetShader();
 	vs->CopyAllBufferData();
