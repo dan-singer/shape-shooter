@@ -30,6 +30,8 @@ private:
 	unsigned int* height;
 	float m_speed = 1.0f; //Speed of the player
 	float m_sensitivity = 0.001f; //How quickly the camera rotates depending on mouse movemnt
+	float m_pitch = 0.0f;
+	float m_yaw = 0.0f;
 	DirectX::XMFLOAT2 prevMousePos = DirectX::XMFLOAT2(0,0);
 	HWND* hWnd;
 

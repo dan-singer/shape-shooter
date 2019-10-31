@@ -18,10 +18,16 @@ void MovementComponent::Tick(float deltaTime)
 	XMFLOAT3 fwdData = transform->GetForward();
 	XMFLOAT3 rightData = transform->GetRight();
 
+	rightData.y = 0; //We don't need this component
+
+
+
 	//Store these in XMVectors
 	XMVECTOR position = XMLoadFloat3(&posData);
 	XMVECTOR g_forward = XMLoadFloat3(&fwdData);
 	XMVECTOR g_right = XMLoadFloat3(&rightData);
+	g_right = XMVector3Normalize(g_right); //Normalize right vector
+
 	XMVECTOR translation = XMVectorSet(0, 0, 0, 0); //Stores the total amount the camera is moving this frame
 
 
@@ -59,25 +65,23 @@ void MovementComponent::Tick(float deltaTime)
 
 void MovementComponent::OnMouseMove(WPARAM buttonState, int x, int y)
 {
-
-
-	RECT windowLoc;
-	GetWindowRect(*hWnd, &windowLoc);
-
-	int dx = windowLoc.left + x - prevMousePos.x;
-	int dy = windowLoc.top + y - prevMousePos.y;
+	int dx = x - prevMousePos.x;
+	int dy = y - prevMousePos.y;
 
 	printf("%d %d\n", dx, dy);
 
+	m_yaw += dx * m_sensitivity;
+	m_pitch += dy * m_sensitivity;
+
 	XMFLOAT4 rotDeltaData;
-	XMVECTOR rotDelta = XMQuaternionRotationRollPitchYaw(dy * m_sensitivity, dx * m_sensitivity, 0.0f); //Multiply difference by sensitivity, store in a quaternion
+	XMVECTOR rotDelta = XMQuaternionRotationRollPitchYaw(m_pitch, m_yaw, 0.0f); //Multiply difference by sensitivity, store in a quaternion
 	XMStoreFloat4(&rotDeltaData, rotDelta);
-	GetOwner()->GetTransform()->Rotate(rotDeltaData); //Apply our new rotation to the camera
+	GetOwner()->GetTransform()->SetRotation(rotDeltaData); //Apply our new rotation to the camera
 
 	//Locking cursor to screen goes here
 
-	prevMousePos.x = (windowLoc.left + (*width / 2));
-	prevMousePos.y = (windowLoc.top + (*height / 2));
+	prevMousePos.x = x;
+	prevMousePos.y = y;
 }
 
 void MovementComponent::SetSpeed(float n_speed)

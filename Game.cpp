@@ -50,6 +50,10 @@ Game::~Game()
 // --------------------------------------------------------
 void Game::Init()
 {
+	GetClientRect(hWnd, &rect);
+
+	SetCursorPos(rect.left + (width / 2), rect.top + 25 + (height / 2));
+
 	LoadResources();
 	CreateEntities();	
 	World::GetInstance()->Start();
@@ -112,7 +116,7 @@ void Game::CreateEntities()
 	cc->UpdateProjectionMatrix((float)width / height);
 	camera->GetTransform()->SetPosition(XMFLOAT3(0, 0, -5));
 	MovementComponent* mc = camera->AddComponent<MovementComponent>();
-	mc->SetSpeed(1.2f); // ** SET SPEED FOR MOVEMENT HERE **
+	mc->SetSpeed(1.5f); // ** SET SPEED FOR MOVEMENT HERE **
 	mc->SetSensitivity(0.002f); // ** SET SENSITIVITY OF CAMERA HERE **
 	mc->GetWindow(&hWnd, &width, &height); //Get window as a pointer
 	world->m_mainCamera = cc;
@@ -158,6 +162,30 @@ void Game::OnResize()
 // --------------------------------------------------------
 void Game::Update(float deltaTime, float totalTime)
 {
+	//Confine mouse to window
+	GetClientRect(hWnd, &rect);
+
+
+	//Calculate points 
+	POINT ul;
+	ul.x = rect.left;
+	ul.y = rect.top;
+
+	POINT rl;
+	rl.x = rect.right;
+	rl.y = rect.bottom;
+
+	MapWindowPoints(hWnd, nullptr, &ul, 1);
+	MapWindowPoints(hWnd, nullptr, &rl, 1);
+
+	rect.left = ul.x;
+	rect.top = ul.y;
+
+	rect.right = rl.x;
+	rect.bottom = rl.y;
+
+	ClipCursor(&rect);
+
 	// Quit if the escape key is pressed
 	if (GetAsyncKeyState(VK_ESCAPE))
 		Quit();
@@ -243,35 +271,17 @@ void Game::OnMouseMove(WPARAM buttonState, int x, int y)
 	//Lock Mouse to center of screen
 	World::GetInstance()->OnMouseMove(buttonState, x, y);
 
-	isTracking = false;
+	/*isTracking = false;
 
 	RECT windowLoc;
 	GetWindowRect(hWnd, &windowLoc);
 	SetCursorPos(windowLoc.left + (width / 2), windowLoc.left + (height / 2));
 
-	isTracking = true;
-
-	//Get location of window on our screen
-	/*isTracking = false;
-	RECT windowLoc;
-	GetWindowRect(hWnd, &windowLoc);
-
-	float windX = (windowLoc.left + (width / 2));
-	float windY = (windowLoc.top + (height / 2));
-
-	int dx = (windowLoc.left+x - windX); //Change in both x and y of mouse.
-	int dy = (windowLoc.top + y - windY);
-
-
-	SetCursorPos(windX, windY);
-
-	
-
 	isTracking = true;*/
 
 
-	prevMousePos.x = windowLoc.left + (width / 2);
-	prevMousePos.y = windowLoc.top + (height / 2);
+	prevMousePos.x = x;
+	prevMousePos.y = y;
 }
 
 // --------------------------------------------------------
