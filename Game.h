@@ -30,9 +30,13 @@ public:
 	void OnMouseWheel(float wheelDelta,   int x, int y);
 private:
 
+	float mouseYaw = 0;
+	float mousePitch = 0;
+
 	// Initialization helper methods - feel free to customize, combine, etc.
 	void LoadResources(); 
 	void CreateEntities();
+	float sensitivity; //Putting this here since we're decuppling mouse from the movement component
 	RECT rect; //struct representing the rectangle that is our window
 	// Keeps track of the old mouse position.  Useful for 
 	// determining how far the mouse moved in a single frame.
