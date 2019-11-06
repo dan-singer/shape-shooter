@@ -65,7 +65,7 @@ void MovementComponent::Tick(float deltaTime)
 
 void MovementComponent::OnMouseMove(WPARAM buttonState, int x, int y)
 {
-	int dx = x - prevMousePos.x;
+	/*int dx = x - prevMousePos.x;
 	int dy = y - prevMousePos.y;
 
 	// printf("%d %d\n", dx, dy);
@@ -77,11 +77,11 @@ void MovementComponent::OnMouseMove(WPARAM buttonState, int x, int y)
 	XMVECTOR rotDelta = XMQuaternionRotationRollPitchYaw(m_pitch, m_yaw, 0.0f); //Multiply difference by sensitivity, store in a quaternion
 	XMStoreFloat4(&rotDeltaData, rotDelta);
 	GetOwner()->GetTransform()->SetRotation(rotDeltaData); //Apply our new rotation to the camera
-
+	
 	//Locking cursor to screen goes here
 
 	prevMousePos.x = x;
-	prevMousePos.y = y;
+	prevMousePos.y = y;*/
 }
 
 void MovementComponent::SetSpeed(float n_speed)

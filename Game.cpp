@@ -55,9 +55,12 @@ Game::~Game()
 // --------------------------------------------------------
 void Game::Init()
 {
+	sensitivity = 1.2;
 	GetClientRect(hWnd, &rect);
 
-	SetCursorPos(rect.left + (width / 2), rect.top + 25 + (height / 2));
+	SetCursorPos(rect.left + ( (rect.right - rect.left)/ 2), rect.top + ((rect.bottom - rect.top) / 2));
+
+	ShowCursor(false);
 
 	LoadResources();
 	CreateEntities();	
@@ -194,29 +197,70 @@ void Game::OnResize()
 // --------------------------------------------------------
 void Game::Update(float deltaTime, float totalTime)
 {
+	//MOUSE MOVEMENT
+	 // Get current position
+	POINT cursorPos = {};
+	GetCursorPos(&cursorPos);
+
+	// Calculate mouse movement for this frame
+	// Use this for anything that cares about
+	// mouse movement, like the camera!
+	int mouseMoveX = cursorPos.x - prevMousePos.x;
+	int mouseMoveY = cursorPos.y - prevMousePos.y;
+
+	float yaw = mouseMoveX * sensitivity * deltaTime;
+	float pitch = mouseMoveY * sensitivity * deltaTime;
+
+	mouseYaw += yaw;
+	mousePitch += pitch;
+
+	XMFLOAT4 rotDeltaData;
+	XMVECTOR rotDelta = XMQuaternionRotationRollPitchYaw(mousePitch, mouseYaw, 0.0f); //Multiply difference by sensitivity, store in a quaternion
+	XMStoreFloat4(&rotDeltaData, rotDelta);
+	World::GetInstance()->m_mainCamera->GetOwner()->GetTransform()->SetRotation(rotDeltaData);
+	
+	if (prevMousePos.x != cursorPos.x || prevMousePos.y != cursorPos.y)
+		printf((std::to_string(mouseYaw) + " " + std::to_string(mousePitch) + "\n").c_str());
+
+
+	// Save position for next frame
+	/*prevMousePos.x = cursorPos.x;
+	prevMousePos.y = cursorPos.y;*/
+
+	
+	// Set cursor to center
+	RECT windowRect;
+	GetWindowRect(this->hWnd, &windowRect);
+	int windowWidth = windowRect.right - windowRect.left;
+	int windowHeight = windowRect.bottom - windowRect.top;
+	SetCursorPos(windowRect.left + windowWidth / 2, windowRect.top + windowHeight / 2);
+
+	prevMousePos.x = windowRect.left + windowWidth / 2;
+	prevMousePos.y = windowRect.top + windowHeight / 2;
+
 	//Confine mouse to window
-	GetClientRect(hWnd, &rect);
+	//GetClientRect(hWnd, &rect);
+	//END MOUSE MOVEMENT
 
+	////Calculate points 
+	//POINT ul;
+	//ul.x = rect.left;
+	//ul.y = rect.top;
 
-	//Calculate points 
-	POINT ul;
-	ul.x = rect.left;
-	ul.y = rect.top;
+	//POINT rl;
+	//rl.x = rect.right;
+	//rl.y = rect.bottom;
 
-	POINT rl;
-	rl.x = rect.right;
-	rl.y = rect.bottom;
+	//MapWindowPoints(hWnd, nullptr, &ul, 1);
+	//MapWindowPoints(hWnd, nullptr, &rl, 1);
 
-	MapWindowPoints(hWnd, nullptr, &ul, 1);
-	MapWindowPoints(hWnd, nullptr, &rl, 1);
+	//rect.left = ul.x;
+	//rect.top = ul.y;
 
-	rect.left = ul.x;
-	rect.top = ul.y;
+	//rect.right = rl.x;
+	//rect.bottom = rl.y;
 
-	rect.right = rl.x;
-	rect.bottom = rl.y;
-
-	ClipCursor(&rect);
+	//ClipCursor(&rect);
 
 	// Quit if the escape key is pressed
 	if (GetAsyncKeyState(VK_ESCAPE))
@@ -270,8 +314,8 @@ void Game::OnMouseDown(WPARAM buttonState, int x, int y)
 	// Add any custom code here...
 	World::GetInstance()->OnMouseDown(buttonState, x, y);
 	// Save the previous mouse position, so we have it for the future
-	prevMousePos.x = x;
-	prevMousePos.y = y;
+	//prevMousePos.x = x;
+	//prevMousePos.y = y;
 
 	// Capture the mouse so we keep getting mouse move
 	// events even if the mouse leaves the window.  we'll be
@@ -312,8 +356,8 @@ void Game::OnMouseMove(WPARAM buttonState, int x, int y)
 	isTracking = true;*/
 
 
-	prevMousePos.x = x;
-	prevMousePos.y = y;
+	//prevMousePos.x = x;
+	//prevMousePos.y = y;
 }
 
 // --------------------------------------------------------
