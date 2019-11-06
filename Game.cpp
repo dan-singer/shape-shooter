@@ -111,7 +111,7 @@ void Game::LoadResources()
 
 	world->CreateMaterial("leather", vs, ps, world->GetTexture("leather"), world->GetTexture("velvet_normal"), world->GetSamplerState("main"));
 	world->CreateMaterial("metal", vs, ps, world->GetTexture("metal"), world->GetTexture("velvet_normal"), world->GetSamplerState("main"));
-	world->CreateMaterial("metalUI", vs, uiPs, world->GetTexture("metal"), nullptr, world->GetSamplerState("main"));
+	world->CreateMaterial("metalUI", vs, uiPs, world->GetTexture("metal"), world->GetTexture("velvet_normal"), world->GetSamplerState("main"));
 }
 
 

@@ -228,11 +228,11 @@ void World::OnMouseDown(WPARAM buttonState, int x, int y)
 
 void World::OnMouseUp(WPARAM buttonState, int x, int y)
 {
-for (Entity* entity : m_entities) {
-	for (Component* component : entity->GetAllComponents()) {
-		component->OnMouseUp(buttonState, x, y);
+	for (Entity* entity : m_entities) {
+		for (Component* component : entity->GetAllComponents()) {
+			component->OnMouseUp(buttonState, x, y);
+		}
 	}
-}
 }
 
 void World::OnMouseMove(WPARAM buttonState, int x, int y)
@@ -391,8 +391,8 @@ void World::DrawEntities(ID3D11DeviceContext* context)
 		entity->GetTransform()->RecalculateWorldMatrix();
 		if (entity->GetMesh() && entity->GetMaterial()) {
 			entity->PrepareMaterial(
-				m_mainCamera->GetViewMatrix(), m_mainCamera->GetProjectionMatrix(), 
-				m_mainCamera->GetOwner()->GetTransform()->GetPosition(), 
+				m_mainCamera->GetViewMatrix(), m_mainCamera->GetProjectionMatrix(),
+				m_mainCamera->GetOwner()->GetTransform()->GetPosition(),
 				m_lights, m_activeLightCount);
 			ID3D11Buffer* entityVB = entity->GetMesh()->GetVertexBuffer();
 			context->IASetVertexBuffers(0, 1, &entityVB, &stride, &offset);

@@ -1,7 +1,6 @@
 #include "RigidBodyComponent.h"
 #include "Transform.h"
 #include "Entity.h"
-#include <DirectXMath.h>
 
 using namespace DirectX;
 
@@ -15,9 +14,11 @@ void RigidBodyComponent::SetSphereCollider(float radius)
 	m_shape = new btSphereShape((btScalar)radius);
 }
 
-void RigidBodyComponent::ApplyImpulse(btVector3 force)
+void RigidBodyComponent::ApplyImpulse(DirectX::XMFLOAT3 impulse)
 {
-	m_body->applyCentralImpulse(force);
+	// Convert to a btVector3
+	btVector3 btForce(impulse.x, impulse.y, impulse.z);
+	m_body->applyCentralImpulse(btForce);
 }
 
 void RigidBodyComponent::Start()
