@@ -44,14 +44,12 @@ void Launcher::SpawnProjectile()
 	// Call start on this projectile so the rigidbody is ready before applying an impulse
 	projectile->StartAllComponents();
 
-	// TODO refactor RigidBodyComponent to accept XMFLOAT instead of btVector
-	btVector3 impulse;
 	XMFLOAT3 fwd = transform->GetForward();
-	impulse.setX(fwd.x);
-	impulse.setY(fwd.y);
-	impulse.setZ(fwd.z);
+	XMVECTOR impulseVec = XMLoadFloat3(&fwd) * m_impulseMagnitude;
+	XMFLOAT3 impulse;
+	XMStoreFloat3(&impulse, impulseVec);
 
-	projectile->GetRigidBody()->ApplyImpulse(impulse * m_impulseMagnitude);
+	projectile->GetRigidBody()->ApplyImpulse(impulse);
 }
 
 void Launcher::Start()

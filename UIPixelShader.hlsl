@@ -11,9 +11,10 @@ struct VertexToPixel
 	//  |    |                |
 	//  v    v                v
 	float4 position		: SV_POSITION;
-	float3 normal		: NORMAL;
-    float3 worldPos		: POSITION;
 	float2 uv			: TEXCOORD;
+	float3 normal		: NORMAL;
+	float3 tangent		: TANGENT;
+	float3 worldPos		: POSITION;
 };
 
 Texture2D diffuseTexture : register(t0);
@@ -31,5 +32,5 @@ SamplerState samplerState : register(s0);
 // --------------------------------------------------------
 float4 main(VertexToPixel input) : SV_TARGET
 {
-	return float4(0,0,0,1);
+	return diffuseTexture.Sample(samplerState, input.uv);
 }
