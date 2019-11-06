@@ -217,7 +217,7 @@ void Game::Update(float deltaTime, float totalTime)
 	XMFLOAT4 rotDeltaData;
 	XMVECTOR rotDelta = XMQuaternionRotationRollPitchYaw(mousePitch, mouseYaw, 0.0f); //Multiply difference by sensitivity, store in a quaternion
 	XMStoreFloat4(&rotDeltaData, rotDelta);
-	World::GetInstance()->Find("Cam")->GetTransform()->SetRotation(rotDeltaData);
+	World::GetInstance()->m_mainCamera->GetOwner()->GetTransform()->SetRotation(rotDeltaData);
 	
 	if (prevMousePos.x != cursorPos.x || prevMousePos.y != cursorPos.y)
 		printf((std::to_string(mouseYaw) + " " + std::to_string(mousePitch) + "\n").c_str());
