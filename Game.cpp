@@ -1,6 +1,7 @@
 #include "Game.h"
 #include "Vertex.h"
 #include <WICTextureLoader.h>
+#include "DDSTextureLoader.h"
 #include <time.h>
 #include "Transform.h"
 #include "MaterialComponent.h"
@@ -46,7 +47,9 @@ Game::Game(HINSTANCE hInstance)
 
 Game::~Game()
 {
-
+	skyDepthState->Release();
+	skyRastState->Release();
+	skySRV->Release();
 }
 
 // --------------------------------------------------------
@@ -94,11 +97,17 @@ void Game::LoadResources()
 	SimpleVertexShader* vs = world->CreateVertexShader("vs", device, context, L"VertexShader.cso");
 	SimplePixelShader* uiPs = world->CreatePixelShader("ui", device, context, L"UIPixelShader.cso");
 	SimplePixelShader* ps  = world->CreatePixelShader("ps", device, context, L"PixelShader.cso");
+	//sky shaders
+	SimpleVertexShader* vsSky = world->CreateVertexShader("vsSky", device, context, L"VSSkyBox");
+	SimplePixelShader* psSky = world->CreatePixelShader("psSky", device, context, L"PSSkyBox");
 
 	// Textures
 	world->CreateTexture("leather", device, context, L"Assets/Textures/Leather.jpg");
 	world->CreateTexture("metal", device, context, L"Assets/Textures/BareMetal.png");
 	world->CreateTexture("velvet_normal", device, context, L"Assets/Textures/Velvet_N.jpg");
+
+	//skyTexture
+	CreateDDSTextureFromFile(device, L"Assets/Textures/SunnyCubeMap.dds", 0, &skySRV);
 
 	// Create the sampler state
 	D3D11_SAMPLER_DESC samplerDesc = {};
@@ -112,6 +121,18 @@ void Game::LoadResources()
 	world->CreateMaterial("leather", vs, ps, world->GetTexture("leather"), world->GetTexture("velvet_normal"), world->GetSamplerState("main"));
 	world->CreateMaterial("metal", vs, ps, world->GetTexture("metal"), world->GetTexture("velvet_normal"), world->GetSamplerState("main"));
 	world->CreateMaterial("metalUI", vs, uiPs, world->GetTexture("metal"), world->GetTexture("velvet_normal"), world->GetSamplerState("main"));
+
+	//Skybox stuff
+	D3D11_RASTERIZER_DESC rd = {};
+	rd.FillMode = D3D11_FILL_SOLID;
+	rd.CullMode = D3D11_CULL_FRONT;
+	device->CreateRasterizerState(&rd, &skyRastState);
+
+	D3D11_DEPTH_STENCIL_DESC ds = {};
+	ds.DepthEnable = true;
+	ds.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+	ds.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
+	device->CreateDepthStencilState(&ds, &skyDepthState);
 }
 
 
@@ -290,6 +311,39 @@ void Game::Draw(float deltaTime, float totalTime)
 
 	// Draw each entity
 	World::GetInstance()->DrawEntities(context);
+
+	//skyStuff
+	UINT stride = sizeof(Vertex);
+	UINT offset = 0;
+
+	context->RSSetState(skyRastState);
+	context->OMSetDepthStencilState(skyDepthState, 0);
+
+	ID3D11Buffer* skyVB = World::GetInstance()->GetMesh("cube")->GetVertexBuffer();
+	ID3D11Buffer* skyIB = World::GetInstance()->GetMesh("cube")->GetIndexBuffer();
+
+	context->IASetVertexBuffers(0, 1, &skyVB, &stride, &offset);
+	context->IASetIndexBuffer(skyIB, DXGI_FORMAT_R32_UINT, 0);
+
+	World::GetInstance()->GetVertexShader("vsSky")->SetMatrix4x4("view", World::GetInstance()->m_mainCamera->GetViewMatrix());
+	World::GetInstance()->GetVertexShader("vsSky")->SetMatrix4x4("projection", World::GetInstance()->m_mainCamera->GetProjectionMatrix());
+
+	World::GetInstance()->GetVertexShader("vsSky")->CopyAllBufferData();
+	World::GetInstance()->GetVertexShader("vsSky")->SetShader();
+
+
+	World::GetInstance()->GetPixelShader("psSky")->SetShader();
+	World::GetInstance()->GetPixelShader("psSky")->SetShaderResourceView("skyTexture", skySRV);
+	World::GetInstance()->GetPixelShader("psSky")->SetSamplerState("samplerOptions", World::GetInstance()->GetSamplerState("main"));
+
+	// Finally do the actual drawing
+	context->DrawIndexed(World::GetInstance()->GetMesh("cube")->GetIndexCount(), 0, 0);
+
+	// Reset states for next frame
+	context->RSSetState(0);
+	context->OMSetDepthStencilState(0, 0);
+
+
 
 	// Present the back buffer to the user
 	//  - Puts the final frame we're drawing into the window so the user can see it
