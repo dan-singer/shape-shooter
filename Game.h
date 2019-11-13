@@ -32,6 +32,8 @@ private:
 
 	float mouseYaw = 0;
 	float mousePitch = 0;
+	float minPitch = -45.0f;
+	float maxPitch = 45.0f;
 
 	// Initialization helper methods - feel free to customize, combine, etc.
 	void LoadResources(); 
