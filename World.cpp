@@ -445,7 +445,7 @@ void World::DrawEntities(ID3D11DeviceContext* context)
 	ID3D11Buffer* skyVB = World::GetInstance()->GetMesh("cube")->GetVertexBuffer();
 	ID3D11Buffer* skyIB = World::GetInstance()->GetMesh("cube")->GetIndexBuffer();
 
-	context->IASetVertexBuffers(0, 1, &skyVB, &stride, &offset);
+	context->IASetVertexBuffers(0, 1, &skyVB, &stride, &offset); 
 	context->IASetIndexBuffer(skyIB, DXGI_FORMAT_R32_UINT, 0);
 
 	GetVertexShader("vsSky")->SetMatrix4x4("view", m_mainCamera->GetViewMatrix());
