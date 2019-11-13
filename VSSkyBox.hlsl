@@ -33,6 +33,8 @@ VertexToPixel main(VertexShaderInput input)
 	matrix viewProj = mul(viewNoTranslation, projection);
 	output.position = mul(float4(input.position, 1.0f), viewProj);
 
+	output.position.z = output.position.w;
+
 	output.sampleDirection = input.position;
 
 	return output;

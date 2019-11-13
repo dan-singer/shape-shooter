@@ -423,6 +423,7 @@ void World::DrawEntities(ID3D11DeviceContext* context)
 	//    have different geometry.
 	UINT stride = sizeof(Vertex);
 	UINT offset = 0;
+	//GetVertexShader("vs")
 	for (Entity* entity : m_entities) {
 		entity->GetTransform()->RecalculateWorldMatrix();
 		if (entity->GetMesh() && entity->GetMaterial()) {
