@@ -209,7 +209,7 @@ ID3D11ShaderResourceView* World::GetTexture(const std::string& name)
 ID3D11ShaderResourceView* World::CreateCubeTexture(const std::string& name, ID3D11Device* device, ID3D11DeviceContext* context, const wchar_t* fileName)
 {
 	m_cubeSRVs[name] = nullptr;
-	DirectX::CreateDDSTextureFromFile(device, context, fileName, 0, &m_SRVs[name]);
+	DirectX::CreateDDSTextureFromFile(device, context, fileName, 0, &m_cubeSRVs[name]);
 	return m_cubeSRVs[name];
 }
 ID3D11ShaderResourceView* World::GetCubeTexture(const std::string& name)
