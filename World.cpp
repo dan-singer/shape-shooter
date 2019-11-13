@@ -210,7 +210,7 @@ ID3D11ShaderResourceView* World::CreateCubeTexture(const std::string& name, ID3D
 {
 	m_cubeSRVs[name] = nullptr;
 	DirectX::CreateDDSTextureFromFile(device, context, fileName, 0, &m_SRVs[name]);
-	return m_SRVs[name];
+	return m_cubeSRVs[name];
 }
 ID3D11ShaderResourceView* World::GetCubeTexture(const std::string& name)
 {
@@ -512,7 +512,12 @@ World::~World()
 	for (const auto& pair : m_samplerStates) {
 		pair.second->Release();
 	}
-
+	for (const auto& pair : m_rastStates) {
+		pair.second->Release();
+	}
+	for (const auto& pair : m_depthStates) {
+		pair.second->Release();
+	}
 
 }
 
