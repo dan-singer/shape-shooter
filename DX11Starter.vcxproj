@@ -163,6 +163,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="AmmoVisualizer.cpp" />
+    <ClCompile Include="ButtonComponent.cpp" />
     <ClCompile Include="CameraComponent.cpp" />
     <ClCompile Include="CollisionTester.cpp" />
     <ClCompile Include="Component.cpp" />
@@ -185,10 +186,13 @@
     <ClCompile Include="SimpleShader.cpp" />
     <ClCompile Include="TimedDestructor.cpp" />
     <ClCompile Include="Transform.cpp" />
+    <ClCompile Include="UITextComponent.cpp" />
+    <ClCompile Include="UITransform.cpp" />
     <ClCompile Include="World.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AmmoVisualizer.h" />
+    <ClInclude Include="ButtonComponent.h" />
     <ClInclude Include="CameraComponent.h" />
     <ClInclude Include="CollisionTester.h" />
     <ClInclude Include="Component.h" />
@@ -210,6 +214,8 @@
     <ClInclude Include="SimpleShader.h" />
     <ClInclude Include="TimedDestructor.h" />
     <ClInclude Include="Transform.h" />
+    <ClInclude Include="UITextComponent.h" />
+    <ClInclude Include="UITransform.h" />
     <ClInclude Include="Vertex.h" />
     <ClInclude Include="World.h" />
   </ItemGroup>
