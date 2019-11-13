@@ -30,7 +30,10 @@ private:
 	std::map<std::string, SimplePixelShader*> m_pixelShaders;
 	std::map<std::string, Material*> m_materials;
 	std::map<std::string, ID3D11ShaderResourceView*> m_SRVs;
+	std::map<std::string, ID3D11ShaderResourceView*>m_cubeSRVs;
 	std::map<std::string, ID3D11SamplerState*> m_samplerStates;
+	std::map<std::string, ID3D11RasterizerState*> m_rastStates;
+	std::map<std::string, ID3D11DepthStencilState*> m_depthStates;
 	std::queue<Entity*> m_spawnQueue;
 	std::queue<Entity*> m_destroyQueue;
 	LightComponent::Light m_lights[MAX_LIGHTS];
@@ -130,11 +133,24 @@ public:
 	ID3D11ShaderResourceView* CreateTexture(const std::string& name, ID3D11Device* device, ID3D11DeviceContext* context, const wchar_t* fileName);
 	ID3D11ShaderResourceView* GetTexture(const std::string& name);
 
+	//create a different shader resorce veiw and returns it
+	ID3D11ShaderResourceView* CreateCubeTexture(const std::string& name, ID3D11Device* device, ID3D11DeviceContext* context, const wchar_t* fileName);
+	ID3D11ShaderResourceView* GetCubeTexture(const std::string& name);
+
 	// --------------------------------------------------------
 	// Create a sampler state and store it in the internal map
 	// --------------------------------------------------------
 	ID3D11SamplerState* CreateSamplerState(const std::string& name, D3D11_SAMPLER_DESC* description, ID3D11Device* device);
 	ID3D11SamplerState* GetSamplerState(const std::string& name);
+
+	//create rast state
+	ID3D11RasterizerState* CreateRasterizerState(const std::string& name, D3D11_RASTERIZER_DESC* description, ID3D11Device* device);
+	ID3D11RasterizerState* GetRasterizerrState(const std::string& name);
+
+	//create depth state
+	ID3D11DepthStencilState* CreateDepthStencilState(const std::string& name, D3D11_DEPTH_STENCIL_DESC* description, ID3D11Device* device);
+	ID3D11DepthStencilState* GetDepthStencilState(const std::string& name);
+
 	// Lifecycle methods for Entities
 	void OnMouseDown(WPARAM buttonState, int x, int y);
 	void OnMouseUp(WPARAM buttonState, int x, int y);

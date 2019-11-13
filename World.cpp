@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <iostream>
 #include <WICTextureLoader.h>
+#include "DDSTextureLoader.h"
 #include "RigidBodyComponent.h"
 
 World::World()
@@ -205,6 +206,17 @@ ID3D11ShaderResourceView* World::GetTexture(const std::string& name)
 	return m_SRVs[name];
 }
 
+ID3D11ShaderResourceView* World::CreateCubeTexture(const std::string& name, ID3D11Device* device, ID3D11DeviceContext* context, const wchar_t* fileName)
+{
+	m_cubeSRVs[name] = nullptr;
+	DirectX::CreateDDSTextureFromFile(device, context, fileName, 0, &m_SRVs[name]);
+	return m_SRVs[name];
+}
+ID3D11ShaderResourceView* World::GetCubeTexture(const std::string& name)
+{
+	return m_cubeSRVs[name];
+}
+
 ID3D11SamplerState* World::CreateSamplerState(const std::string& name, D3D11_SAMPLER_DESC* description, ID3D11Device* device)
 {
 	m_samplerStates[name] = nullptr;
@@ -215,6 +227,30 @@ ID3D11SamplerState* World::CreateSamplerState(const std::string& name, D3D11_SAM
 ID3D11SamplerState* World::GetSamplerState(const std::string& name)
 {
 	return m_samplerStates[name];
+}
+
+ID3D11RasterizerState* World::CreateRasterizerState(const std::string& name, D3D11_RASTERIZER_DESC* description, ID3D11Device* device)
+{
+	m_rastStates[name] = nullptr;
+	device->CreateRasterizerState(description, &m_rastStates[name]);
+	return m_rastStates[name];
+}
+
+ID3D11RasterizerState* World::GetRasterizerrState(const std::string& name)
+{
+	return m_rastStates[name];
+}
+
+ID3D11DepthStencilState* World::CreateDepthStencilState(const std::string& name, D3D11_DEPTH_STENCIL_DESC* description, ID3D11Device* device)
+{
+	m_depthStates[name] = nullptr;
+	device->CreateDepthStencilState(description, &m_depthStates[name]);
+	return m_depthStates[name];
+}
+
+ID3D11DepthStencilState* World::GetDepthStencilState(const std::string& name)
+{
+	return m_depthStates[name];
 }
 
 void World::OnMouseDown(WPARAM buttonState, int x, int y)
@@ -400,6 +436,35 @@ void World::DrawEntities(ID3D11DeviceContext* context)
 			context->DrawIndexed(entity->GetMesh()->GetIndexCount(), 0, 0);
 		}
 	}
+
+	//skyStuff
+
+	context->RSSetState(m_rastStates["skyRastState"]);
+	context->OMSetDepthStencilState(m_depthStates["skyDepthState"], 0);
+
+	ID3D11Buffer* skyVB = World::GetInstance()->GetMesh("cube")->GetVertexBuffer();
+	ID3D11Buffer* skyIB = World::GetInstance()->GetMesh("cube")->GetIndexBuffer();
+
+	context->IASetVertexBuffers(0, 1, &skyVB, &stride, &offset);
+	context->IASetIndexBuffer(skyIB, DXGI_FORMAT_R32_UINT, 0);
+
+	GetVertexShader("vsSky")->SetMatrix4x4("view", m_mainCamera->GetViewMatrix());
+	GetVertexShader("vsSky")->SetMatrix4x4("projection", m_mainCamera->GetProjectionMatrix());
+
+	GetVertexShader("vsSky")->CopyAllBufferData();
+	GetVertexShader("vsSky")->SetShader();
+
+
+	GetPixelShader("psSky")->SetShader();
+	GetPixelShader("psSky")->SetShaderResourceView("skyTexture", GetCubeTexture("sky"));
+	GetPixelShader("psSky")->SetSamplerState("samplerOptions", GetSamplerState("main"));
+
+	// Finally do the actual drawing
+	context->DrawIndexed(GetMesh("cube")->GetIndexCount(), 0, 0);
+
+	// Reset states for next frame
+	context->RSSetState(0);
+	context->OMSetDepthStencilState(0, 0);
 }
 
 World::~World()
@@ -439,6 +504,9 @@ World::~World()
 		delete pair.second;
 	}
 	for (const auto& pair : m_SRVs) {
+		pair.second->Release();
+	}
+	for (const auto& pair : m_cubeSRVs) {
 		pair.second->Release();
 	}
 	for (const auto& pair : m_samplerStates) {

@@ -33,11 +33,6 @@ private:
 	float mouseYaw = 0;
 	float mousePitch = 0;
 
-	//skyStuff to be moved elsewhere?
-	ID3D11RasterizerState* skyRastState;
-	ID3D11DepthStencilState* skyDepthState;
-	ID3D11ShaderResourceView* skySRV;
-
 	// Initialization helper methods - feel free to customize, combine, etc.
 	void LoadResources(); 
 	void CreateEntities();
