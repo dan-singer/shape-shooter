@@ -205,6 +205,25 @@ void Game::LoadMainMenu()
 		LoadGame();
 	});
 
+	Entity* creditsText = world->Instantiate("Credits Text");
+	creditsText->AddComponent<UITransform>()->Init(
+		Anchor::BOTTOM_RIGHT,
+		0.0f,
+		XMFLOAT2(1.0f, 1.0f),
+		XMFLOAT2(.75f, .75f),
+		XMFLOAT2(-50.0f, -25.0f)
+	);
+	creditsText->AddComponent<UITextComponent>()->Init(
+		"?",
+		world->GetFont("Open Sans"),
+		Colors::Green
+	);
+	creditsText->AddComponent<ButtonComponent>()->AddOnClick([&]() {
+		World* world = World::GetInstance();
+		world->DestroyAllEntities();
+		LoadCredits();
+	});
+
 	// Light Entities
 	Entity* dirLight = world->Instantiate("DirLight1");
 	LightComponent* dirLightComp = dirLight->AddComponent<LightComponent>();
@@ -289,6 +308,49 @@ void Game::LoadGame()
 
 void Game::LoadCredits()
 {
+	ShowCursor(true);
+
+	World* world = World::GetInstance();
+
+	Entity* camera = world->Instantiate("Cam");
+	CameraComponent* cc = camera->AddComponent<CameraComponent>();
+	cc->UpdateProjectionMatrix((float)width / height);
+	camera->GetTransform()->SetPosition(XMFLOAT3(0, 0, -10));
+
+	world->m_mainCamera = cc;
+
+	Entity* mainText = world->Instantiate("Credits Text");
+	mainText->AddComponent<UITransform>()->Init(
+		Anchor::CENTER_CENTER,
+		0.0f,
+		XMFLOAT2(0.5f, 0.5f),
+		XMFLOAT2(1, 1),
+		XMFLOAT2(0, 0)
+	);
+	mainText->AddComponent<UITextComponent>()->Init(
+		"- Credits -",
+		world->GetFont("Open Sans"),
+		Colors::White
+	);
+
+	Entity* backText = world->Instantiate("Back Text");
+	backText->AddComponent<UITransform>()->Init(
+		Anchor::BOTTOM_RIGHT,
+		0.0f,
+		XMFLOAT2(1.0f, 1.0f),
+		XMFLOAT2(.75f, .75f),
+		XMFLOAT2(-50.0f, -25.0f)
+	);
+	backText->AddComponent<UITextComponent>()->Init(
+		"Back",
+		world->GetFont("Open Sans"),
+		Colors::White
+	);
+	backText->AddComponent<ButtonComponent>()->AddOnClick([&]() {
+		World* world = World::GetInstance();
+		world->DestroyAllEntities();
+		LoadMainMenu();
+	});
 
 }
 

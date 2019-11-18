@@ -32,8 +32,8 @@ private:
 
 	float mouseYaw = 0;
 	float mousePitch = 0;
-	float minPitch = 0.0f;
-	float maxPitch = 45.0f;
+	float minPitch = -.78f;
+	float maxPitch = .78f;
 
 	bool allowCameraRotation = false;
 
