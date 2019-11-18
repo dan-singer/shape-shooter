@@ -41,6 +41,7 @@ private:
 	std::queue<Entity*> m_destroyQueue;
 	LightComponent::Light m_lights[MAX_LIGHTS];
 	int m_activeLightCount = 0;
+	ID3D11Device* m_device = nullptr;
 
 	// Bullet
 	btDefaultCollisionConfiguration* m_collisionConfiguration;
@@ -77,6 +78,9 @@ public:
 	btDiscreteDynamicsWorld* GetPhysicsWorld() { return m_dynamicsWorld; }
 
 	void SetGravity(btVector3 gravity);
+
+	void SetDevice(ID3D11Device* device) { m_device = device; }
+	ID3D11Device* GetDevice() { return m_device; }
 
 	// --------------------------------------------------------
 	// Create an Entity in the world. 

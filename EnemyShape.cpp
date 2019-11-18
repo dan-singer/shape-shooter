@@ -3,6 +3,7 @@
 #include "Mesh.h"
 #include "CameraComponent.h"
 #include <DirectXMath.h>
+#include "TimedDestructor.h"
 
 using namespace DirectX;
 void EnemyShape::Start()
@@ -25,8 +26,17 @@ void EnemyShape::Tick(float deltaTime)
 
 void EnemyShape::OnCollisionBegin(Entity* other)
 {
-	// For now, just destroy both objects if the shapes match
 	if (GetOwner()->GetMesh() == other->GetMesh()) {
+
+		World* world = World::GetInstance();
+		// Spawn an explosion effect
+		Entity* explosion = world->Instantiate("explosion");
+		explosion->AddComponent<EmitterComponent>()->Init("Assets/Particles/Explosion.json", world->GetDevice());
+		explosion->AddComponent<MaterialComponent>()->m_material = world->GetMaterial("particle");
+		explosion->AddComponent<TimedDestructor>()->SetDuration(2.0f);
+		explosion->GetTransform()->SetPosition(GetOwner()->GetTransform()->GetPosition());
+		explosion->StartAllComponents();
+
 		World::GetInstance()->Destroy(other);
 		World::GetInstance()->Destroy(GetOwner());
 	}

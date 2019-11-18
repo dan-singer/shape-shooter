@@ -85,6 +85,8 @@ void Game::LoadResources()
 {
 	World* world = World::GetInstance();
 
+	world->SetDevice(device);
+
 	// Meshes
 	world->CreateMesh("cube", "Assets/Models/cube.obj", device);
 	world->CreateMesh("cone", "Assets/Models/cone.obj", device);
@@ -207,78 +209,6 @@ void Game::CreateEntities()
 	dirLightComp->m_data.type = LightComponent::Directional;
 	dirLightComp->m_data.color = XMFLOAT3(1.0f, 1.0f, 1.0f);
 	dirLightComp->m_data.intensity = 1.0f;
-	
-	/*
-	Entity* pointLight = world->Instantiate("PointLight1");
-	LightComponent* pointLightComp = pointLight->AddComponent<LightComponent>();
-	pointLightComp->m_data.type = LightComponent::Point;
-	pointLightComp->m_data.color = XMFLOAT3(1.0f, 0, 0);
-	pointLightComp->m_data.intensity = 1.0f;
-	pointLight->GetTransform()->SetPosition(XMFLOAT3(-1, 1, 0));
-
-	Entity* spotLight = world->Instantiate("SpotLight1");
-	LightComponent* spotLightComp = spotLight->AddComponent<LightComponent>();
-	spotLightComp->m_data.type = LightComponent::Spot;
-	spotLightComp->m_data.color = XMFLOAT3(0, 1.0f, 0);
-	spotLightComp->m_data.intensity = 1.0f;
-	spotLightComp->m_data.spotFalloff = 1.0f;
-	spotLight->GetTransform()->SetPosition(XMFLOAT3(1, 1, 0));
-	XMFLOAT4 spotLightRot;
-	XMStoreFloat4(&spotLightRot, XMQuaternionRotationRollPitchYaw(0, 90.0f, 0));
-	spotLight->GetTransform()->SetRotation(spotLightRot);
-	*/
-
-	/*
-	// UI SAMPLES
-	Entity* sprite = world->Instantiate("sprite");
-	sprite->AddComponent<UITransform>()->Init(Anchor::BOTTOM_RIGHT, 0, XMFLOAT2(1, 1), XMFLOAT2(.25f,.25f), XMFLOAT2(0, 0));
-	sprite->AddComponent<MaterialComponent>()->m_material = world->GetMaterial("leather");
-	ButtonComponent* spriteButton = sprite->AddComponent<ButtonComponent>();
-	spriteButton->AddOnEnter([]() 
-		{
-			printf("Entered\n");
-		}
-	);
-	spriteButton->AddOnExit([]()
-		{
-			printf("Exited\n");
-		}
-	);
-
-	Entity* text = world->Instantiate("text");
-	text->AddComponent<UITransform>()->Init(Anchor::CENTER_CENTER, 0, XMFLOAT2(.5f, .5f), XMFLOAT2(1, 1), XMFLOAT2(0, 0));
-	text->AddComponent<UITextComponent>()->Init("Hello World", world->GetFont("Open Sans"), Colors::White);
-	ButtonComponent* button = text->AddComponent<ButtonComponent>();
-	button->AddOnClick([]() 
-		{
-			Entity* text = World::GetInstance()->Find("text");
-			text->GetComponent<UITextComponent>()->m_color = Colors::Black;
-		}
-	);
-	*/	
-	
-	// Particle System Test
-	Entity* particleSystem = world->Instantiate("particle-system");
-	//particleSystem->AddComponent<EmitterComponent>()->Init(
-	//	110,
-	//	20,
-	//	5,
-	//	2.0f,
-	//	0.1f,
-	//	2.0f,
-	//	XMFLOAT4(1, 0.1f, 0.1f, 0.7f),
-	//	XMFLOAT4(1, 0.6f, 0.1f, 0),
-	//	XMFLOAT3(-2, 2, 0),
-	//	XMFLOAT3(0.2f, 0.2f, 0.2f),
-	//	XMFLOAT3(2, 0, 0),
-	//	XMFLOAT3(0.1f, 0.1f, 0.1f),
-	//	XMFLOAT4(-2, 2, -2, 2),
-	//	XMFLOAT3(0, 0, 0),				
-	//	device
-	//);
-	// Reading particle data from a configuration json file
-	particleSystem->AddComponent<EmitterComponent>()->Init("Assets/Particles/Explosion.json", device);
-	particleSystem->AddComponent<MaterialComponent>()->m_material = world->GetMaterial("particle");
 }
 
 // --------------------------------------------------------
@@ -326,14 +256,8 @@ void Game::Update(float deltaTime, float totalTime)
 	XMStoreFloat4(&rotDeltaData, rotDelta);
 	World::GetInstance()->m_mainCamera->GetOwner()->GetTransform()->SetRotation(rotDeltaData);
 	
-	if (prevMousePos.x != cursorPos.x || prevMousePos.y != cursorPos.y)
-		printf((std::to_string(mouseYaw) + " " + std::to_string(mousePitch) + "\n").c_str());
-
-
-	// Save position for next frame
-	/*prevMousePos.x = cursorPos.x;
-	prevMousePos.y = cursorPos.y;*/
-
+	//if (prevMousePos.x != cursorPos.x || prevMousePos.y != cursorPos.y)
+	//	printf((std::to_string(mouseYaw) + " " + std::to_string(mousePitch) + "\n").c_str());
 	
 	// Set cursor to center
 	RECT windowRect;
@@ -344,30 +268,6 @@ void Game::Update(float deltaTime, float totalTime)
 
 	prevMousePos.x = windowRect.left + windowWidth / 2;
 	prevMousePos.y = windowRect.top + windowHeight / 2;
-
-	//Confine mouse to window
-	//GetClientRect(hWnd, &rect);
-	//END MOUSE MOVEMENT
-
-	////Calculate points 
-	//POINT ul;
-	//ul.x = rect.left;
-	//ul.y = rect.top;
-
-	//POINT rl;
-	//rl.x = rect.right;
-	//rl.y = rect.bottom;
-
-	//MapWindowPoints(hWnd, nullptr, &ul, 1);
-	//MapWindowPoints(hWnd, nullptr, &rl, 1);
-
-	//rect.left = ul.x;
-	//rect.top = ul.y;
-
-	//rect.right = rl.x;
-	//rect.bottom = rl.y;
-
-	//ClipCursor(&rect);
 
 	// Quit if the escape key is pressed
 	if (GetAsyncKeyState(VK_ESCAPE))
