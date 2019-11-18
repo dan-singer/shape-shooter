@@ -35,7 +35,6 @@ void EnemyShape::OnCollisionBegin(Entity* other)
 		explosion->AddComponent<MaterialComponent>()->m_material = world->GetMaterial("particle");
 		explosion->AddComponent<TimedDestructor>()->SetDuration(2.0f);
 		explosion->GetTransform()->SetPosition(GetOwner()->GetTransform()->GetPosition());
-		explosion->StartAllComponents();
 
 		World::GetInstance()->Destroy(other);
 		World::GetInstance()->Destroy(GetOwner());

@@ -32,6 +32,10 @@ protected:
 	RigidBodyComponent* m_rigidBodyComponent = nullptr;
 	UITransform* m_uiTransform = nullptr;
 	EmitterComponent* m_emitter = nullptr;
+
+	// Used to determine if start needs to be called
+	bool m_hasStarted = false;
+
 	// Use the World to instantiate an Entity
 	Entity(const std::string& name);
 public:

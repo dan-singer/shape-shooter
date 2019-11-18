@@ -109,6 +109,11 @@ public:
 	void Destroy(Entity* entity);
 
 	// --------------------------------------------------------
+	// Destroys all entities that have been instantiated
+	// --------------------------------------------------------
+	void DestroyAllEntities();
+
+	// --------------------------------------------------------
 	// Creates a mesh and adds it to the internal Mesh map
 	// --------------------------------------------------------
 	Mesh* CreateMesh(const std::string& name, Vertex* vertices, int numVertices, unsigned int* indices, int numIndices, ID3D11Device* device);
@@ -179,7 +184,6 @@ public:
 	void OnMouseMove(WPARAM buttonState, int x, int y);
 	void OnMouseWheel(float wheelDelta, int x, int y);
 	void OnResize(int width, int height);
-	void Start();
 	void Tick(float deltaTime);
 
 

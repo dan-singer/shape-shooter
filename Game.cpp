@@ -61,13 +61,8 @@ void Game::Init()
 	sensitivity = 1.2;
 	GetClientRect(hWnd, &rect);
 
-	SetCursorPos(rect.left + ( (rect.right - rect.left)/ 2), rect.top + ((rect.bottom - rect.top) / 2));
-
-	ShowCursor(false);
-
 	LoadResources();
-	CreateEntities();	
-	World::GetInstance()->Start();
+	LoadMainMenu();
 	// Tell the input assembler stage of the pipeline what kind of
 	// geometric primitives (points, lines or triangles) we want to draw.  
 	// Essentially: "What kind of shape should the GPU draw with our data?"
@@ -117,9 +112,6 @@ void Game::LoadResources()
 	samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
 	world->CreateSamplerState("main", &samplerDesc, device);
 
-	world->CreateMaterial("leather", vs, ps, world->GetTexture("leather"), world->GetTexture("velvet_normal"), world->GetSamplerState("main"));
-	world->CreateMaterial("metal", vs, ps, world->GetTexture("metal"), world->GetTexture("velvet_normal"), world->GetSamplerState("main"));
-	world->CreateMaterial("metalUI", vs, uiPs, world->GetTexture("metal"), world->GetTexture("velvet_normal"), world->GetSamplerState("main"));
 
 	// UI
 	world->CreateSpriteBatch("main", context);
@@ -151,6 +143,7 @@ void Game::LoadResources()
 	// Materials
 	world->CreateMaterial("leather", vs, ps, world->GetTexture("leather"), world->GetTexture("velvet_normal"), world->GetSamplerState("main"));
 	world->CreateMaterial("metal", vs, ps, world->GetTexture("metal"), world->GetTexture("velvet_normal"), world->GetSamplerState("main"));
+	world->CreateMaterial("metalUI", vs, uiPs, world->GetTexture("metal"), world->GetTexture("velvet_normal"), world->GetSamplerState("main"));
 	world->CreateMaterial(
 		"particle",
 		particleVs,
@@ -165,8 +158,91 @@ void Game::LoadResources()
 }
 
 
-void Game::CreateEntities()
+void Game::LoadMainMenu()
 {
+
+	ShowCursor(true);
+
+	World* world = World::GetInstance();
+
+	Entity* camera = world->Instantiate("Cam");
+	CameraComponent* cc = camera->AddComponent<CameraComponent>();
+	cc->UpdateProjectionMatrix((float)width / height);
+	camera->GetTransform()->SetPosition(XMFLOAT3(0, 0, -10));
+
+	world->m_mainCamera = cc;
+
+	Entity* mainText = world->Instantiate("Main Text");
+	mainText->AddComponent<UITransform>()->Init(
+		Anchor::CENTER_CENTER,
+		0.0f,
+		XMFLOAT2(0.5f, 0.5f),
+		XMFLOAT2(1, 1),
+		XMFLOAT2(0, 0)
+	);
+	mainText->AddComponent<UITextComponent>()->Init(
+		"Shape Shooter",
+		world->GetFont("Open Sans"),
+		Colors::White
+	);
+
+	Entity* startText = world->Instantiate("Start Text");
+	startText->AddComponent<UITransform>()->Init(
+		Anchor::BOTTOM_CENTER,
+		0.0f,
+		XMFLOAT2(.5f, 0),
+		XMFLOAT2(.75f, .75f),
+		XMFLOAT2(0, -50.0f)
+	);
+	startText->AddComponent<UITextComponent>()->Init(
+		"- Start Game -",
+		world->GetFont("Open Sans"),
+		Colors::Red
+	);
+	startText->AddComponent<ButtonComponent>()->AddOnClick([&]() {
+		World* world = World::GetInstance();
+		world->DestroyAllEntities();
+		LoadGame();
+	});
+
+	// Light Entities
+	Entity* dirLight = world->Instantiate("DirLight1");
+	LightComponent* dirLightComp = dirLight->AddComponent<LightComponent>();
+	dirLightComp->m_data.type = LightComponent::Directional;
+	dirLightComp->m_data.color = XMFLOAT3(1.0f, 1.0f, 1.0f);
+	dirLightComp->m_data.intensity = 1.0f;
+
+	// Decorative shapes
+	XMFLOAT4 ranges(-8, 8, -5, 5);
+	int rows = 10; int cols = 10;
+	// Meshes
+	srand(time(0));
+	std::string meshes[] = { "cube", "cone", "cylinder", "helix", "sphere", "torus" };
+	int numMeshes = sizeof(meshes) / sizeof(std::string);
+	for (int r = 0; r < rows; ++r) {
+		for (int c = 0; c < cols; ++c) {
+			std::string mesh = meshes[rand() % numMeshes];
+			Entity* entity = world->Instantiate("Decorative Shape");
+			entity->AddComponent<MeshComponent>()->m_mesh = world->GetMesh(mesh);
+			entity->AddComponent<MaterialComponent>()->m_material = world->GetMaterial("metal");
+			entity->AddComponent<Rotator>()->eulerDelta = XMFLOAT3(
+				rand() % 2 , rand() % 2, rand() % 2
+			);
+			float cPercentage = c / (float)cols;
+			float rPercentage = r / (float)rows;
+			float x = ranges.x + (cPercentage * (ranges.y - ranges.x));
+			float y = ranges.z + (rPercentage * (ranges.w - ranges.z));
+			entity->GetTransform()->SetPosition(XMFLOAT3(x, y, 0));
+			entity->GetTransform()->SetScale(XMFLOAT3(0.5f, 0.5f, 0.5f));
+		}
+	}
+}
+
+void Game::LoadGame()
+{
+	ShowCursor(false);
+	allowCameraRotation = true;
+
 	World* world = World::GetInstance();
 
 	Entity* ShapeSpawnManager = world->Instantiate("ShapeSpawnManager");
@@ -211,6 +287,11 @@ void Game::CreateEntities()
 	dirLightComp->m_data.intensity = 1.0f;
 }
 
+void Game::LoadCredits()
+{
+
+}
+
 // --------------------------------------------------------
 // Handle resizing DirectX "stuff" to match the new window size.
 // For instance, updating our projection matrix's aspect ratio.
@@ -227,47 +308,50 @@ void Game::OnResize()
 // --------------------------------------------------------
 void Game::Update(float deltaTime, float totalTime)
 {
-	//MOUSE MOVEMENT
-	 // Get current position
-	POINT cursorPos = {};
-	GetCursorPos(&cursorPos);
+	if (allowCameraRotation) {
+		//MOUSE MOVEMENT
+		// Get current position
+		POINT cursorPos = {};
+		GetCursorPos(&cursorPos);
 
-	// Calculate mouse movement for this frame
-	// Use this for anything that cares about
-	// mouse movement, like the camera!
-	int mouseMoveX = cursorPos.x - prevMousePos.x;
-	int mouseMoveY = cursorPos.y - prevMousePos.y;
+		// Calculate mouse movement for this frame
+		// Use this for anything that cares about
+		// mouse movement, like the camera!
+		int mouseMoveX = cursorPos.x - prevMousePos.x;
+		int mouseMoveY = cursorPos.y - prevMousePos.y;
 
-	float yaw = mouseMoveX * sensitivity * deltaTime;
-	float pitch = mouseMoveY * sensitivity * deltaTime;
+		float yaw = mouseMoveX * sensitivity * deltaTime;
+		float pitch = mouseMoveY * sensitivity * deltaTime;
 
-	mouseYaw += yaw;
-	mousePitch += pitch;
+		mouseYaw += yaw;
+		mousePitch += pitch;
 
-	if (mousePitch > maxPitch) {
-		mousePitch = maxPitch;
+		if (mousePitch > maxPitch) {
+			mousePitch = maxPitch;
+		}
+		else if (mousePitch < minPitch) {
+			mousePitch = minPitch;
+		}
+
+		XMFLOAT4 rotDeltaData;
+		XMVECTOR rotDelta = XMQuaternionRotationRollPitchYaw(mousePitch, mouseYaw, 0.0f); //Multiply difference by sensitivity, store in a quaternion
+		XMStoreFloat4(&rotDeltaData, rotDelta);
+		World::GetInstance()->m_mainCamera->GetOwner()->GetTransform()->SetRotation(rotDeltaData);
+
+		//if (prevMousePos.x != cursorPos.x || prevMousePos.y != cursorPos.y)
+		//	printf((std::to_string(mouseYaw) + " " + std::to_string(mousePitch) + "\n").c_str());
+
+		// Set cursor to center
+		RECT windowRect;
+		GetWindowRect(this->hWnd, &windowRect);
+		int windowWidth = windowRect.right - windowRect.left;
+		int windowHeight = windowRect.bottom - windowRect.top;
+		SetCursorPos(windowRect.left + windowWidth / 2, windowRect.top + windowHeight / 2);
+
+		prevMousePos.x = windowRect.left + windowWidth / 2;
+		prevMousePos.y = windowRect.top + windowHeight / 2;
 	}
-	else if (mousePitch < minPitch) {
-		mousePitch = minPitch;
-	}
 
-	XMFLOAT4 rotDeltaData;
-	XMVECTOR rotDelta = XMQuaternionRotationRollPitchYaw(mousePitch, mouseYaw, 0.0f); //Multiply difference by sensitivity, store in a quaternion
-	XMStoreFloat4(&rotDeltaData, rotDelta);
-	World::GetInstance()->m_mainCamera->GetOwner()->GetTransform()->SetRotation(rotDeltaData);
-	
-	//if (prevMousePos.x != cursorPos.x || prevMousePos.y != cursorPos.y)
-	//	printf((std::to_string(mouseYaw) + " " + std::to_string(mousePitch) + "\n").c_str());
-	
-	// Set cursor to center
-	RECT windowRect;
-	GetWindowRect(this->hWnd, &windowRect);
-	int windowWidth = windowRect.right - windowRect.left;
-	int windowHeight = windowRect.bottom - windowRect.top;
-	SetCursorPos(windowRect.left + windowWidth / 2, windowRect.top + windowHeight / 2);
-
-	prevMousePos.x = windowRect.left + windowWidth / 2;
-	prevMousePos.y = windowRect.top + windowHeight / 2;
 
 	// Quit if the escape key is pressed
 	if (GetAsyncKeyState(VK_ESCAPE))

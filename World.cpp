@@ -51,6 +51,7 @@ void World::Flush()
 {
 	while (!m_spawnQueue.empty()) {
 		Entity* toAdd = m_spawnQueue.front();
+		toAdd->StartAllComponents();
 		m_entities.push_back(toAdd);
 		m_spawnQueue.pop();
 	}
@@ -137,6 +138,14 @@ Entity* World::FindWithTag(const std::string& tag)
 void World::Destroy(Entity* entity)
 {
 	m_destroyQueue.push(entity);
+}
+
+void World::DestroyAllEntities()
+{
+	for (Entity* entity : m_entities) {
+		Destroy(entity);
+	}
+	m_mainCamera = nullptr;
 }
 
 Mesh* World::CreateMesh(const std::string& name, Vertex* vertices, int numVertices, unsigned int* indices, int numIndices, ID3D11Device* device)
@@ -316,16 +325,6 @@ void World::OnResize(int width, int height)
 	}
 }
 
-void World::Start()
-{
-	Flush();
-	RebuildLights();
-	for (Entity* entity : m_entities) {
-		for (Component* component : entity->GetAllComponents()) {
-			component->Start();
-		}
-	}
-}
 
 void World::Tick(float deltaTime)
 {
