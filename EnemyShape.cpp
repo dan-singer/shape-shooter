@@ -4,6 +4,7 @@
 #include "CameraComponent.h"
 #include <DirectXMath.h>
 #include "TimedDestructor.h"
+#include "UITextComponent.h"
 
 using namespace DirectX;
 void EnemyShape::Start()
@@ -38,5 +39,9 @@ void EnemyShape::OnCollisionBegin(Entity* other)
 
 		World::GetInstance()->Destroy(other);
 		World::GetInstance()->Destroy(GetOwner());
+
+		int score = std::stoi(world->Find("Score")->GetComponent<UITextComponent>()->m_text);
+		score++;
+		world->Find("Score")->GetComponent<UITextComponent>()->m_text = std::to_string(score);
 	}
 }

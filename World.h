@@ -14,6 +14,7 @@
 #include <queue>
 #include <SpriteBatch.h>
 #include <SpriteFont.h>
+#include <CommonStates.h>
 class CameraComponent;
 class Entity;
 
@@ -54,6 +55,8 @@ private:
 	btVector3 m_gravity = btVector3(0, -9.81f, 0);
 	std::map<const btCollisionObject*, std::set<const btCollisionObject*>> m_collisionMap;
 
+	DirectX::CommonStates* m_states;
+
 	World();
 	// --------------------------------------------------------
 	// Rebuilds the array of light structs that will be sent to the GPU.
@@ -81,7 +84,11 @@ public:
 
 	void SetGravity(btVector3 gravity);
 
-	void SetDevice(ID3D11Device* device) { m_device = device; }
+	void SetDevice(ID3D11Device* device) 
+	{ 
+		m_device = device;
+		m_states = new DirectX::CommonStates(device);
+	}
 	ID3D11Device* GetDevice() { return m_device; }
 
 	// --------------------------------------------------------
