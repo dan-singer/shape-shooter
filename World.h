@@ -35,13 +35,15 @@ private:
 	std::map<std::string, ID3D11ShaderResourceView*>m_cubeSRVs;
 	std::map<std::string, ID3D11SamplerState*> m_samplerStates;
 	std::map<std::string, ID3D11RasterizerState*> m_rastStates;
-	std::map<std::string, ID3D11DepthStencilState*> m_depthStates;
+	std::map<std::string, ID3D11DepthStencilState*> m_depthStencilStates;
+	std::map<std::string, ID3D11BlendState*> m_blendStates;
 	std::map<std::string, DirectX::SpriteBatch*> m_spriteBatches;
 	std::map<std::string, DirectX::SpriteFont*> m_fonts;
 	std::queue<Entity*> m_spawnQueue;
 	std::queue<Entity*> m_destroyQueue;
 	LightComponent::Light m_lights[MAX_LIGHTS];
 	int m_activeLightCount = 0;
+	ID3D11Device* m_device = nullptr;
 
 	// Bullet
 	btDefaultCollisionConfiguration* m_collisionConfiguration;
@@ -79,6 +81,9 @@ public:
 
 	void SetGravity(btVector3 gravity);
 
+	void SetDevice(ID3D11Device* device) { m_device = device; }
+	ID3D11Device* GetDevice() { return m_device; }
+
 	// --------------------------------------------------------
 	// Create an Entity in the world. 
 	// Note: you'll have to manually call Start on all of the components
@@ -106,6 +111,11 @@ public:
 	void Destroy(Entity* entity);
 
 	// --------------------------------------------------------
+	// Destroys all entities that have been instantiated
+	// --------------------------------------------------------
+	void DestroyAllEntities();
+
+	// --------------------------------------------------------
 	// Creates a mesh and adds it to the internal Mesh map
 	// --------------------------------------------------------
 	Mesh* CreateMesh(const std::string& name, Vertex* vertices, int numVertices, unsigned int* indices, int numIndices, ID3D11Device* device);
@@ -128,7 +138,8 @@ public:
 	// Creates a Material and adds it to the internal Materials map
 	// --------------------------------------------------------
 	Material* CreateMaterial(const std::string& name, SimpleVertexShader* vertexShader, SimplePixelShader* pixelShader,
-		ID3D11ShaderResourceView* diffuseSRV, ID3D11ShaderResourceView* normalSRV, ID3D11SamplerState* samplerState);
+		ID3D11ShaderResourceView* diffuseSRV, ID3D11ShaderResourceView* normalSRV, ID3D11SamplerState* samplerState,
+		ID3D11BlendState* blendState = nullptr, ID3D11DepthStencilState* depthStencilState = nullptr);
 	Material* GetMaterial(const std::string& name);
 
 	// --------------------------------------------------------
@@ -147,15 +158,22 @@ public:
 	ID3D11SamplerState* CreateSamplerState(const std::string& name, D3D11_SAMPLER_DESC* description, ID3D11Device* device);
 	ID3D11SamplerState* GetSamplerState(const std::string& name);
 
-<<<<<<< HEAD
 	//create rast state
 	ID3D11RasterizerState* CreateRasterizerState(const std::string& name, D3D11_RASTERIZER_DESC* description, ID3D11Device* device);
-	ID3D11RasterizerState* GetRasterizerrState(const std::string& name);
+	ID3D11RasterizerState* GetRasterizerState(const std::string& name);
 
-	//create depth state
+	// --------------------------------------------------------
+	// Create a depth stencil state and store it in the internal map
+	// --------------------------------------------------------
 	ID3D11DepthStencilState* CreateDepthStencilState(const std::string& name, D3D11_DEPTH_STENCIL_DESC* description, ID3D11Device* device);
 	ID3D11DepthStencilState* GetDepthStencilState(const std::string& name);
-=======
+
+	// --------------------------------------------------------
+	// Create a blend state and store it in the internal map
+	// --------------------------------------------------------
+	ID3D11BlendState* CreateBlendState(const std::string& name, D3D11_BLEND_DESC* description, ID3D11Device* device);
+	ID3D11BlendState* GetBlendState(const std::string& name);
+
 	// --------------------------------------------------------
 	// Create a SpriteBatch and store it in the internal map
 	// --------------------------------------------------------
@@ -169,7 +187,6 @@ public:
 	DirectX::SpriteFont* CreateFont(const std::string& name, ID3D11Device* device, const wchar_t* path);
 	DirectX::SpriteFont* GetFont(const std::string& name);
 
->>>>>>> develop
 
 	// Lifecycle methods for Entities
 	void OnMouseDown(WPARAM buttonState, int x, int y);
@@ -177,7 +194,6 @@ public:
 	void OnMouseMove(WPARAM buttonState, int x, int y);
 	void OnMouseWheel(float wheelDelta, int x, int y);
 	void OnResize(int width, int height);
-	void Start();
 	void Tick(float deltaTime);
 
 

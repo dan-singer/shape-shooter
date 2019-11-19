@@ -32,12 +32,16 @@ private:
 
 	float mouseYaw = 0;
 	float mousePitch = 0;
-	float minPitch = -45.0f;
-	float maxPitch = 45.0f;
+	float minPitch = -.78f;
+	float maxPitch = .78f;
+
+	bool allowCameraRotation = false;
 
 	// Initialization helper methods - feel free to customize, combine, etc.
 	void LoadResources(); 
-	void CreateEntities();
+	void LoadMainMenu();
+	void LoadGame();
+	void LoadCredits();
 	float sensitivity; //Putting this here since we're decuppling mouse from the movement component
 	RECT rect; //struct representing the rectangle that is our window
 	// Keeps track of the old mouse position.  Useful for 

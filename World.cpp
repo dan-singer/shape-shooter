@@ -52,6 +52,7 @@ void World::Flush()
 {
 	while (!m_spawnQueue.empty()) {
 		Entity* toAdd = m_spawnQueue.front();
+		toAdd->StartAllComponents();
 		m_entities.push_back(toAdd);
 		m_spawnQueue.pop();
 	}
@@ -140,6 +141,14 @@ void World::Destroy(Entity* entity)
 	m_destroyQueue.push(entity);
 }
 
+void World::DestroyAllEntities()
+{
+	for (Entity* entity : m_entities) {
+		Destroy(entity);
+	}
+	m_mainCamera = nullptr;
+}
+
 Mesh* World::CreateMesh(const std::string& name, Vertex* vertices, int numVertices, unsigned int* indices, int numIndices, ID3D11Device* device)
 {
 	Mesh* mesh = new Mesh(vertices, numVertices, indices, numIndices, device);
@@ -185,9 +194,12 @@ SimplePixelShader* World::GetPixelShader(const std::string& name)
 	return m_pixelShaders[name];
 }
 
-Material* World::CreateMaterial(const std::string& name, SimpleVertexShader* vertexShader, SimplePixelShader* pixelShader, ID3D11ShaderResourceView* diffuseSRV, ID3D11ShaderResourceView* normalSRV, ID3D11SamplerState* samplerState)
+Material* World::CreateMaterial(
+	const std::string& name, SimpleVertexShader* vertexShader, SimplePixelShader* pixelShader,
+	ID3D11ShaderResourceView* diffuseSRV, ID3D11ShaderResourceView* normalSRV,
+	ID3D11SamplerState* samplerState, ID3D11BlendState* blendState, ID3D11DepthStencilState* depthStencilState)
 {
-	Material* material = new Material(vertexShader, pixelShader, diffuseSRV, normalSRV, samplerState);
+	Material* material = new Material(vertexShader, pixelShader, diffuseSRV, normalSRV, samplerState, blendState, depthStencilState);
 	m_materials[name] = material;
 	return material;
 }
@@ -239,21 +251,35 @@ ID3D11RasterizerState* World::CreateRasterizerState(const std::string& name, D3D
 	return m_rastStates[name];
 }
 
-ID3D11RasterizerState* World::GetRasterizerrState(const std::string& name)
+ID3D11RasterizerState* World::GetRasterizerState(const std::string& name)
 {
 	return m_rastStates[name];
 }
 
 ID3D11DepthStencilState* World::CreateDepthStencilState(const std::string& name, D3D11_DEPTH_STENCIL_DESC* description, ID3D11Device* device)
 {
-	m_depthStates[name] = nullptr;
-	device->CreateDepthStencilState(description, &m_depthStates[name]);
-	return m_depthStates[name];
+	m_depthStencilStates[name] = nullptr;
+	device->CreateDepthStencilState(description, &m_depthStencilStates[name]);
+	return m_depthStencilStates[name];
 }
 
 ID3D11DepthStencilState* World::GetDepthStencilState(const std::string& name)
 {
-	return m_depthStates[name];
+	return m_depthStencilStates[name];
+}
+
+ID3D11BlendState* World::CreateBlendState(const std::string& name, D3D11_BLEND_DESC* description, ID3D11Device* device)
+{
+	m_blendStates[name] = nullptr;
+	device->CreateBlendState(description, &m_blendStates[name]);
+	return m_blendStates[name];
+}
+
+ID3D11BlendState* World::GetBlendState(const std::string& name)
+{
+	return m_blendStates[name];
+}
+
 DirectX::SpriteBatch* World::CreateSpriteBatch(const std::string& name, ID3D11DeviceContext* context)
 {
 	SpriteBatch* spriteBatch = new DirectX::SpriteBatch(context);
@@ -323,21 +349,9 @@ void World::OnResize(int width, int height)
 	}
 }
 
-void World::Start()
-{
-	Flush();
-	RebuildLights();
-	for (Entity* entity : m_entities) {
-		for (Component* component : entity->GetAllComponents()) {
-			component->Start();
-		}
-	}
-}
 
 void World::Tick(float deltaTime)
 {
-
-
 	// Simulate physics
 	m_dynamicsWorld->stepSimulation(deltaTime, 10);
 
@@ -444,10 +458,8 @@ void World::DrawEntities(ID3D11DeviceContext* context, DirectX::SpriteBatch* spr
 	RebuildLights();
 
 	std::queue<Entity*> uiEntities;
+	std::queue<Entity*> particleEntities;
 
-	// Set buffers in the input assembler
-	//  - Do this ONCE PER OBJECT you're drawing, since each object might
-	//    have different geometry.
 	UINT stride = sizeof(Vertex);
 	UINT offset = 0;
 	//GetVertexShader("vs")
@@ -457,6 +469,10 @@ void World::DrawEntities(ID3D11DeviceContext* context, DirectX::SpriteBatch* spr
 		// Delay rendering UI elements so they can be batched together
 		if (entity->GetUITransform()) {
 			uiEntities.push(entity);
+		}
+		// Delay rendering Particle Emitters 
+		else if (entity->GetEmitter()) {
+			particleEntities.push(entity);
 		}
 		// Render traditional 3D entities
 		else if (entity->GetMesh() && entity->GetMaterial()) {
@@ -474,7 +490,7 @@ void World::DrawEntities(ID3D11DeviceContext* context, DirectX::SpriteBatch* spr
 	//skyStuff
 
 	context->RSSetState(m_rastStates["skyRastState"]);
-	context->OMSetDepthStencilState(m_depthStates["skyDepthState"], 0);
+	context->OMSetDepthStencilState(m_depthStencilStates["skyDepthState"], 0);
 
 	ID3D11Buffer* skyVB = World::GetInstance()->GetMesh("cube")->GetVertexBuffer();
 	ID3D11Buffer* skyIB = World::GetInstance()->GetMesh("cube")->GetIndexBuffer();
@@ -482,16 +498,17 @@ void World::DrawEntities(ID3D11DeviceContext* context, DirectX::SpriteBatch* spr
 	context->IASetVertexBuffers(0, 1, &skyVB, &stride, &offset); 
 	context->IASetIndexBuffer(skyIB, DXGI_FORMAT_R32_UINT, 0);
 
-	GetVertexShader("vsSky")->SetMatrix4x4("view", m_mainCamera->GetViewMatrix());
-	GetVertexShader("vsSky")->SetMatrix4x4("projection", m_mainCamera->GetProjectionMatrix());
+	SimpleVertexShader* vsSky = GetVertexShader("vsSky");
+	vsSky->SetMatrix4x4("view", m_mainCamera->GetViewMatrix());
+	vsSky->SetMatrix4x4("projection", m_mainCamera->GetProjectionMatrix());
+	
+	vsSky->CopyAllBufferData();
+	vsSky->SetShader();
 
-	GetVertexShader("vsSky")->CopyAllBufferData();
-	GetVertexShader("vsSky")->SetShader();
-
-
-	GetPixelShader("psSky")->SetShader();
-	GetPixelShader("psSky")->SetShaderResourceView("skyTexture", GetCubeTexture("sky"));
-	GetPixelShader("psSky")->SetSamplerState("samplerOptions", GetSamplerState("main"));
+	SimplePixelShader* psSky = GetPixelShader("psSky");
+	psSky->SetShader();
+	psSky->SetShaderResourceView("skyTexture", GetCubeTexture("sky"));
+	psSky->SetSamplerState("samplerOptions", GetSamplerState("main"));
 
 	// Finally do the actual drawing
 	context->DrawIndexed(GetMesh("cube")->GetIndexCount(), 0, 0);
@@ -499,6 +516,49 @@ void World::DrawEntities(ID3D11DeviceContext* context, DirectX::SpriteBatch* spr
 	// Reset states for next frame
 	context->RSSetState(0);
 	context->OMSetDepthStencilState(0, 0);
+	// Particle Systems
+	while (!particleEntities.empty()) {
+		Entity* entity = particleEntities.front();
+		EmitterComponent* emitter = entity->GetEmitter();
+		particleEntities.pop();
+
+
+		Material* particleMat = entity->GetMaterial();
+		// Particle states
+		float blend[4] = { 1,1,1,1 };
+		context->OMSetBlendState(particleMat->GetBlendState(), blend, 0xffffffff);	// Additive blending
+		context->OMSetDepthStencilState(particleMat->GetDepthStencilState(), 0); // No depth WRITING
+		entity->PrepareParticleMaterial(m_mainCamera);
+
+		// Draw the emitter
+		emitter->CopyParticlesToGPU(context, m_mainCamera);
+
+		// Set up buffers
+		UINT stride = sizeof(ParticleVertex);
+		UINT offset = 0;
+		context->IASetVertexBuffers(0, 1, &emitter->m_vertexBuffer, &stride, &offset);
+		context->IASetIndexBuffer(emitter->m_indexBuffer, DXGI_FORMAT_R32_UINT, 0);
+
+		// Draw the correct parts of the buffer
+		if (emitter->m_firstAliveIndex < emitter->m_firstDeadIndex)
+		{
+			context->DrawIndexed(emitter->m_livingParticleCount * 6, emitter->m_firstAliveIndex * 6, 0);
+		}
+		else if (emitter->m_firstAliveIndex > emitter->m_firstDeadIndex)
+		{
+			// Draw first half (0 -> dead)
+			context->DrawIndexed(emitter->m_firstDeadIndex * 6, 0, 0);
+
+			// Draw second half (alive -> max)
+			context->DrawIndexed((emitter->m_maxParticles - emitter->m_firstAliveIndex) * 6, emitter->m_firstAliveIndex * 6, 0);
+		}
+
+		// Reset to default states for next frame
+		context->OMSetBlendState(0, blend, 0xffffffff);
+		context->OMSetDepthStencilState(0, 0);
+		context->RSSetState(0);
+	}
+
 	spriteBatch->Begin();
 	while (!uiEntities.empty()) {
 		Entity* entity = uiEntities.front();
@@ -569,7 +629,6 @@ void World::DrawEntities(ID3D11DeviceContext* context, DirectX::SpriteBatch* spr
 	context->OMSetBlendState(0, blendFactor, 0xFFFFFFFF);
 	context->RSSetState(0);
 	context->OMSetDepthStencilState(0, 0);
-
 }
 
 World::~World()
@@ -623,8 +682,12 @@ World::~World()
 	for (const auto& pair : m_rastStates) {
 		pair.second->Release();
 	}
-	for (const auto& pair : m_depthStates) {
+	for (const auto& pair : m_depthStencilStates) {
 		pair.second->Release();
+	}
+	for (const auto& pair : m_blendStates) {
+		pair.second->Release();
+	}
 	for (const auto& pair : m_spriteBatches) {
 		delete pair.second;
 	}
