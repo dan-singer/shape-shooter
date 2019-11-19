@@ -14,6 +14,9 @@
 #include "ShapeSpawnerManager.h"
 #include "Launcher.h"
 #include "AmmoVisualizer.h"
+#include <SpriteFont.h>
+#include "UITextComponent.h"
+#include "ButtonComponent.h"
 
 // For the DirectX Math library
 using namespace DirectX;
@@ -104,8 +107,6 @@ void Game::LoadResources()
 	world->CreateTexture("metal", device, context, L"Assets/Textures/BareMetal.png");
 	world->CreateTexture("velvet_normal", device, context, L"Assets/Textures/Velvet_N.jpg");
 
-	//skyTexture
-	world->CreateCubeTexture("sky", device, context, L"Assets/Textures/SpaceTwo.dds");
 
 	// Create the sampler state
 	D3D11_SAMPLER_DESC samplerDesc = {};
@@ -131,6 +132,9 @@ void Game::LoadResources()
 	ds.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
 	ds.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
 	world->CreateDepthStencilState("skyDepthState", &ds, device);
+	// UI
+	world->CreateSpriteBatch("main", context);
+	world->CreateFont("Open Sans", device, L"Assets/Fonts/open-sans.spritefont");
 }
 
 
@@ -198,6 +202,35 @@ void Game::CreateEntities()
 	XMStoreFloat4(&spotLightRot, XMQuaternionRotationRollPitchYaw(0, 90.0f, 0));
 	spotLight->GetTransform()->SetRotation(spotLightRot);
 	*/
+
+	/*
+	// UI SAMPLES
+	Entity* sprite = world->Instantiate("sprite");
+	sprite->AddComponent<UITransform>()->Init(Anchor::BOTTOM_RIGHT, 0, XMFLOAT2(1, 1), XMFLOAT2(.25f,.25f), XMFLOAT2(0, 0));
+	sprite->AddComponent<MaterialComponent>()->m_material = world->GetMaterial("leather");
+	ButtonComponent* spriteButton = sprite->AddComponent<ButtonComponent>();
+	spriteButton->AddOnEnter([]() 
+		{
+			printf("Entered\n");
+		}
+	);
+	spriteButton->AddOnExit([]()
+		{
+			printf("Exited\n");
+		}
+	);
+
+	Entity* text = world->Instantiate("text");
+	text->AddComponent<UITransform>()->Init(Anchor::CENTER_CENTER, 0, XMFLOAT2(.5f, .5f), XMFLOAT2(1, 1), XMFLOAT2(0, 0));
+	text->AddComponent<UITextComponent>()->Init("Hello World", world->GetFont("Open Sans"), Colors::White);
+	ButtonComponent* button = text->AddComponent<ButtonComponent>();
+	button->AddOnClick([]() 
+		{
+			Entity* text = World::GetInstance()->Find("text");
+			text->GetComponent<UITextComponent>()->m_color = Colors::Black;
+		}
+	);
+	*/	
 }
 
 // --------------------------------------------------------
@@ -232,6 +265,13 @@ void Game::Update(float deltaTime, float totalTime)
 
 	mouseYaw += yaw;
 	mousePitch += pitch;
+
+	if (mousePitch > maxPitch) {
+		mousePitch = maxPitch;
+	}
+	else if (mousePitch < minPitch) {
+		mousePitch = minPitch;
+	}
 
 	XMFLOAT4 rotDeltaData;
 	XMVECTOR rotDelta = XMQuaternionRotationRollPitchYaw(mousePitch, mouseYaw, 0.0f); //Multiply difference by sensitivity, store in a quaternion
@@ -306,9 +346,10 @@ void Game::Draw(float deltaTime, float totalTime)
 		1.0f,
 		0);
 
-
+	
 	// Draw each entity
-	World::GetInstance()->DrawEntities(context);
+	SpriteBatch* mainSpriteBatch = World::GetInstance()->GetSpriteBatch("main");
+	World::GetInstance()->DrawEntities(context, mainSpriteBatch, width, height);
 
 	
 
@@ -322,6 +363,8 @@ void Game::Draw(float deltaTime, float totalTime)
 	// Due to the usage of a more sophisticated swap chain effect,
 	// the render target must be re-bound after every call to Present()
 	context->OMSetRenderTargets(1, &backBufferRTV, depthStencilView);
+
+
 }
 
 

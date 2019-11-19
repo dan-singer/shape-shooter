@@ -12,6 +12,8 @@
 #include "Material.h"
 #include <set>
 #include <queue>
+#include <SpriteBatch.h>
+#include <SpriteFont.h>
 class CameraComponent;
 class Entity;
 
@@ -34,6 +36,8 @@ private:
 	std::map<std::string, ID3D11SamplerState*> m_samplerStates;
 	std::map<std::string, ID3D11RasterizerState*> m_rastStates;
 	std::map<std::string, ID3D11DepthStencilState*> m_depthStates;
+	std::map<std::string, DirectX::SpriteBatch*> m_spriteBatches;
+	std::map<std::string, DirectX::SpriteFont*> m_fonts;
 	std::queue<Entity*> m_spawnQueue;
 	std::queue<Entity*> m_destroyQueue;
 	LightComponent::Light m_lights[MAX_LIGHTS];
@@ -143,6 +147,7 @@ public:
 	ID3D11SamplerState* CreateSamplerState(const std::string& name, D3D11_SAMPLER_DESC* description, ID3D11Device* device);
 	ID3D11SamplerState* GetSamplerState(const std::string& name);
 
+<<<<<<< HEAD
 	//create rast state
 	ID3D11RasterizerState* CreateRasterizerState(const std::string& name, D3D11_RASTERIZER_DESC* description, ID3D11Device* device);
 	ID3D11RasterizerState* GetRasterizerrState(const std::string& name);
@@ -150,6 +155,21 @@ public:
 	//create depth state
 	ID3D11DepthStencilState* CreateDepthStencilState(const std::string& name, D3D11_DEPTH_STENCIL_DESC* description, ID3D11Device* device);
 	ID3D11DepthStencilState* GetDepthStencilState(const std::string& name);
+=======
+	// --------------------------------------------------------
+	// Create a SpriteBatch and store it in the internal map
+	// --------------------------------------------------------
+	DirectX::SpriteBatch* CreateSpriteBatch(const std::string& name, ID3D11DeviceContext* context);
+	DirectX::SpriteBatch* GetSpriteBatch(const std::string& name);
+
+
+	// --------------------------------------------------------
+	// Create a SpriteFont and store it in the internal map
+	// --------------------------------------------------------
+	DirectX::SpriteFont* CreateFont(const std::string& name, ID3D11Device* device, const wchar_t* path);
+	DirectX::SpriteFont* GetFont(const std::string& name);
+
+>>>>>>> develop
 
 	// Lifecycle methods for Entities
 	void OnMouseDown(WPARAM buttonState, int x, int y);
@@ -164,7 +184,7 @@ public:
 	// --------------------------------------------------------
 	// Draws all entities using the device context
 	// --------------------------------------------------------
-	void DrawEntities(ID3D11DeviceContext* context);
+	void DrawEntities(ID3D11DeviceContext* context, DirectX::SpriteBatch* spriteBatch, int screenWidth, int screenHeight);
 
 	~World();
 };
