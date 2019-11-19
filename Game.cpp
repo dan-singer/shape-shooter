@@ -105,7 +105,7 @@ void Game::LoadResources()
 	world->CreateTexture("velvet_normal", device, context, L"Assets/Textures/Velvet_N.jpg");
 
 	//skyTexture
-	world->CreateCubeTexture("sky", device, context, L"Assets/Textures/SunnyCubeMap.dds");
+	world->CreateCubeTexture("sky", device, context, L"Assets/Textures/SpaceTwo.dds");
 
 	// Create the sampler state
 	D3D11_SAMPLER_DESC samplerDesc = {};
