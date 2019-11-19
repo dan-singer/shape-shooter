@@ -1,6 +1,7 @@
 #include "Game.h"
 #include "Vertex.h"
 #include <WICTextureLoader.h>
+#include "DDSTextureLoader.h"
 #include <time.h>
 #include "Transform.h"
 #include "MaterialComponent.h"
@@ -49,7 +50,7 @@ Game::Game(HINSTANCE hInstance)
 
 Game::~Game()
 {
-
+	
 }
 
 // --------------------------------------------------------
@@ -94,6 +95,9 @@ void Game::LoadResources()
 	SimpleVertexShader* vs = world->CreateVertexShader("vs", device, context, L"VertexShader.cso");
 	SimplePixelShader* uiPs = world->CreatePixelShader("ui", device, context, L"UIPixelShader.cso");
 	SimplePixelShader* ps  = world->CreatePixelShader("ps", device, context, L"PixelShader.cso");
+	//sky shaders
+	SimpleVertexShader* vsSky = world->CreateVertexShader("vsSky", device, context, L"VSSkyBox.cso");
+	SimplePixelShader* psSky = world->CreatePixelShader("psSky", device, context, L"PSSkyBox.cso");
 	SimpleVertexShader* particleVs = world->CreateVertexShader("particle", device, context, L"ParticleVS.cso");
 	SimplePixelShader* particlePs = world->CreatePixelShader("particle", device, context, L"ParticlePS.cso");
 
@@ -102,6 +106,9 @@ void Game::LoadResources()
 	world->CreateTexture("metal", device, context, L"Assets/Textures/BareMetal.png");
 	world->CreateTexture("velvet_normal", device, context, L"Assets/Textures/Velvet_N.jpg");
 	world->CreateTexture("particle", device, context, L"Assets/Textures/particle.jpg");
+
+	//skyTexture
+	world->CreateCubeTexture("sky", device, context, L"Assets/Textures/SpaceTwo.dds");
 
 	// Create the sampler state
 	D3D11_SAMPLER_DESC samplerDesc = {};
@@ -113,6 +120,17 @@ void Game::LoadResources()
 	world->CreateSamplerState("main", &samplerDesc, device);
 
 
+	//Skybox stuff
+	D3D11_RASTERIZER_DESC rd = {};
+	rd.FillMode = D3D11_FILL_SOLID;
+	rd.CullMode = D3D11_CULL_FRONT;
+	world->CreateRasterizerState("skyRastState", &rd, device);
+
+	D3D11_DEPTH_STENCIL_DESC ds = {};
+	ds.DepthEnable = true;
+	ds.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+	ds.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
+	world->CreateDepthStencilState("skyDepthState", &ds, device);
 	// UI
 	world->CreateSpriteBatch("main", context);
 	world->CreateFont("Open Sans", device, L"Assets/Fonts/open-sans.spritefont");
@@ -444,6 +462,10 @@ void Game::Draw(float deltaTime, float totalTime)
 	// Draw each entity
 	SpriteBatch* mainSpriteBatch = World::GetInstance()->GetSpriteBatch("main");
 	World::GetInstance()->DrawEntities(context, mainSpriteBatch, width, height);
+
+	
+
+
 
 	// Present the back buffer to the user
 	//  - Puts the final frame we're drawing into the window so the user can see it

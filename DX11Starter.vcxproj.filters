@@ -199,6 +199,12 @@
     <FxCompile Include="UIPixelShader.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
+    <FxCompile Include="PSSkyBox.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="VSSkyBox.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
     <FxCompile Include="ParticleVS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>

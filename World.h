@@ -32,7 +32,9 @@ private:
 	std::map<std::string, SimplePixelShader*> m_pixelShaders;
 	std::map<std::string, Material*> m_materials;
 	std::map<std::string, ID3D11ShaderResourceView*> m_SRVs;
+	std::map<std::string, ID3D11ShaderResourceView*>m_cubeSRVs;
 	std::map<std::string, ID3D11SamplerState*> m_samplerStates;
+	std::map<std::string, ID3D11RasterizerState*> m_rastStates;
 	std::map<std::string, ID3D11DepthStencilState*> m_depthStencilStates;
 	std::map<std::string, ID3D11BlendState*> m_blendStates;
 	std::map<std::string, DirectX::SpriteBatch*> m_spriteBatches;
@@ -146,11 +148,19 @@ public:
 	ID3D11ShaderResourceView* CreateTexture(const std::string& name, ID3D11Device* device, ID3D11DeviceContext* context, const wchar_t* fileName);
 	ID3D11ShaderResourceView* GetTexture(const std::string& name);
 
+	//create a different shader resorce veiw and returns it
+	ID3D11ShaderResourceView* CreateCubeTexture(const std::string& name, ID3D11Device* device, ID3D11DeviceContext* context, const wchar_t* fileName);
+	ID3D11ShaderResourceView* GetCubeTexture(const std::string& name);
+
 	// --------------------------------------------------------
 	// Create a sampler state and store it in the internal map
 	// --------------------------------------------------------
 	ID3D11SamplerState* CreateSamplerState(const std::string& name, D3D11_SAMPLER_DESC* description, ID3D11Device* device);
 	ID3D11SamplerState* GetSamplerState(const std::string& name);
+
+	//create rast state
+	ID3D11RasterizerState* CreateRasterizerState(const std::string& name, D3D11_RASTERIZER_DESC* description, ID3D11Device* device);
+	ID3D11RasterizerState* GetRasterizerState(const std::string& name);
 
 	// --------------------------------------------------------
 	// Create a depth stencil state and store it in the internal map

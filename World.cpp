@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <iostream>
 #include <WICTextureLoader.h>
+#include "DDSTextureLoader.h"
 #include "RigidBodyComponent.h"
 #include "UITextComponent.h"
 
@@ -220,6 +221,17 @@ ID3D11ShaderResourceView* World::GetTexture(const std::string& name)
 	return m_SRVs[name];
 }
 
+ID3D11ShaderResourceView* World::CreateCubeTexture(const std::string& name, ID3D11Device* device, ID3D11DeviceContext* context, const wchar_t* fileName)
+{
+	m_cubeSRVs[name] = nullptr;
+	DirectX::CreateDDSTextureFromFile(device, context, fileName, 0, &m_cubeSRVs[name]);
+	return m_cubeSRVs[name];
+}
+ID3D11ShaderResourceView* World::GetCubeTexture(const std::string& name)
+{
+	return m_cubeSRVs[name];
+}
+
 ID3D11SamplerState* World::CreateSamplerState(const std::string& name, D3D11_SAMPLER_DESC* description, ID3D11Device* device)
 {
 	m_samplerStates[name] = nullptr;
@@ -230,6 +242,18 @@ ID3D11SamplerState* World::CreateSamplerState(const std::string& name, D3D11_SAM
 ID3D11SamplerState* World::GetSamplerState(const std::string& name)
 {
 	return m_samplerStates[name];
+}
+
+ID3D11RasterizerState* World::CreateRasterizerState(const std::string& name, D3D11_RASTERIZER_DESC* description, ID3D11Device* device)
+{
+	m_rastStates[name] = nullptr;
+	device->CreateRasterizerState(description, &m_rastStates[name]);
+	return m_rastStates[name];
+}
+
+ID3D11RasterizerState* World::GetRasterizerState(const std::string& name)
+{
+	return m_rastStates[name];
 }
 
 ID3D11DepthStencilState* World::CreateDepthStencilState(const std::string& name, D3D11_DEPTH_STENCIL_DESC* description, ID3D11Device* device)
@@ -438,6 +462,7 @@ void World::DrawEntities(ID3D11DeviceContext* context, DirectX::SpriteBatch* spr
 
 	UINT stride = sizeof(Vertex);
 	UINT offset = 0;
+	//GetVertexShader("vs")
 	for (Entity* entity : m_entities) {
 		entity->GetTransform()->RecalculateWorldMatrix();
 
@@ -462,6 +487,35 @@ void World::DrawEntities(ID3D11DeviceContext* context, DirectX::SpriteBatch* spr
 		}
 	}
 
+	//skyStuff
+
+	context->RSSetState(m_rastStates["skyRastState"]);
+	context->OMSetDepthStencilState(m_depthStencilStates["skyDepthState"], 0);
+
+	ID3D11Buffer* skyVB = World::GetInstance()->GetMesh("cube")->GetVertexBuffer();
+	ID3D11Buffer* skyIB = World::GetInstance()->GetMesh("cube")->GetIndexBuffer();
+
+	context->IASetVertexBuffers(0, 1, &skyVB, &stride, &offset); 
+	context->IASetIndexBuffer(skyIB, DXGI_FORMAT_R32_UINT, 0);
+
+	SimpleVertexShader* vsSky = GetVertexShader("vsSky");
+	vsSky->SetMatrix4x4("view", m_mainCamera->GetViewMatrix());
+	vsSky->SetMatrix4x4("projection", m_mainCamera->GetProjectionMatrix());
+	
+	vsSky->CopyAllBufferData();
+	vsSky->SetShader();
+
+	SimplePixelShader* psSky = GetPixelShader("psSky");
+	psSky->SetShader();
+	psSky->SetShaderResourceView("skyTexture", GetCubeTexture("sky"));
+	psSky->SetSamplerState("samplerOptions", GetSamplerState("main"));
+
+	// Finally do the actual drawing
+	context->DrawIndexed(GetMesh("cube")->GetIndexCount(), 0, 0);
+
+	// Reset states for next frame
+	context->RSSetState(0);
+	context->OMSetDepthStencilState(0, 0);
 	// Particle Systems
 	while (!particleEntities.empty()) {
 		Entity* entity = particleEntities.front();
@@ -619,7 +673,13 @@ World::~World()
 	for (const auto& pair : m_SRVs) {
 		pair.second->Release();
 	}
+	for (const auto& pair : m_cubeSRVs) {
+		pair.second->Release();
+	}
 	for (const auto& pair : m_samplerStates) {
+		pair.second->Release();
+	}
+	for (const auto& pair : m_rastStates) {
 		pair.second->Release();
 	}
 	for (const auto& pair : m_depthStencilStates) {
