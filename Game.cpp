@@ -110,7 +110,7 @@ void Game::LoadResources()
 	world->CreateTexture("cockpit", device, context, L"Assets/Textures/Cockpit.png");
 
 	//skyTexture
-	world->CreateCubeTexture("sky", device, context, L"Assets/Textures/SpaceTwo.dds");
+	world->CreateCubeTexture("sky", device, context, L"Assets/Textures/spacebox.dds");
 
 	// Create the sampler state
 	D3D11_SAMPLER_DESC samplerDesc = {};
