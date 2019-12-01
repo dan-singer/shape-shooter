@@ -112,6 +112,9 @@ void Game::LoadResources()
 	//skyTexture
 	world->CreateCubeTexture("sky", device, context, L"Assets/Textures/spacebox.dds");
 
+	//skyTexture
+	ID3D11ShaderResourceView* skyTex = world->CreateCubeTexture("sky", device, context, L"Assets/Textures/spacebox.dds");
+
 	// Create the sampler state
 	D3D11_SAMPLER_DESC samplerDesc = {};
 	samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
@@ -120,7 +123,6 @@ void Game::LoadResources()
 	samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
 	samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
 	world->CreateSamplerState("main", &samplerDesc, device);
-
 
 	//Skybox stuff
 	D3D11_RASTERIZER_DESC rd = {};
@@ -161,20 +163,27 @@ void Game::LoadResources()
 	
 
 	// Materials
-	world->CreateMaterial("leather", vs, ps, world->GetTexture("leather"), world->GetTexture("velvet_normal"), world->GetSamplerState("main"));
-	world->CreateMaterial("metal", vs, ps, world->GetTexture("metal"), world->GetTexture("velvet_normal"), world->GetSamplerState("main"));
-	world->CreateMaterial("metalUI", vs, uiPs, world->GetTexture("metal"), world->GetTexture("velvet_normal"), world->GetSamplerState("main"));
+	world->CreateMaterial("leather", vs, ps, world->GetTexture("leather"), world->GetTexture("velvet_normal"), skyTex, world->GetSamplerState("main"));
+	Material* metal = world->CreateMaterial("metal", vs, ps, world->GetTexture("metal"), world->GetTexture("velvet_normal"), skyTex, world->GetSamplerState("main"));
+	world->CreateMaterial("metalUI", vs, uiPs, world->GetTexture("metal"), world->GetTexture("velvet_normal"), skyTex, world->GetSamplerState("main"));
+	world->CreateMaterial("leather", vs, ps, world->GetTexture("leather"), world->GetTexture("velvet_normal"), skyTex, world->GetSamplerState("main"));
+	
+	metal->m_specColor = DirectX::XMFLOAT3(0.662124f, 0.654864f, 0.633732f);
+	metal->m_roughness = 1.0f;
+	metal->m_metalness = 0;
+
 	world->CreateMaterial(
 		"particle",
 		particleVs,
 		particlePs,
 		world->GetTexture("particle"),
 		nullptr,
+		nullptr,
 		world->GetSamplerState("main"),
 		world->GetBlendState("particle"),
 		world->GetDepthStencilState("particle")
 	);
-	world->CreateMaterial("cockpitHUD", vs, uiPs, world->GetTexture("cockpit"), nullptr, world->GetSamplerState("main"));
+	world->CreateMaterial("cockpitHUD", vs, uiPs, world->GetTexture("cockpit"), nullptr, skyTex, world->GetSamplerState("main"));
 
 }
 
@@ -247,12 +256,11 @@ void Game::LoadMainMenu()
 	LightComponent* dirLightComp = dirLight->AddComponent<LightComponent>();
 	dirLightComp->m_data.type = LightComponent::Directional;
 	dirLightComp->m_data.color = XMFLOAT3(1.0f, 1.0f, 1.0f);
-	dirLightComp->m_data.intensity = 1.0f;
+	dirLightComp->m_data.intensity = 2.0f;
 
 	// Decorative shapes
 	XMFLOAT4 ranges(-8, 8, -5, 5);
 	int rows = 10; int cols = 10;
-	// Meshes
 	srand(time(0));
 	std::string meshes[] = { "cube", "cone", "cylinder", "helix", "sphere", "torus" };
 	int numMeshes = sizeof(meshes) / sizeof(std::string);
@@ -321,7 +329,7 @@ void Game::LoadGame()
 	LightComponent* dirLightComp = dirLight->AddComponent<LightComponent>();
 	dirLightComp->m_data.type = LightComponent::Directional;
 	dirLightComp->m_data.color = XMFLOAT3(1.0f, 1.0f, 1.0f);
-	dirLightComp->m_data.intensity = 1.0f;
+	dirLightComp->m_data.intensity = 2.0f;
 
 	// UI elements
 	Entity* cockpit = world->Instantiate("Cockpit");

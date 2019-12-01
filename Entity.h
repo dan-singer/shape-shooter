@@ -25,6 +25,7 @@ protected:
 	std::string m_name;
 	std::unordered_set<std::string> m_tags;
 
+
 	// "Shortcut" references to common components 
 	Transform* m_transform = nullptr;
 	MeshComponent* m_meshComponent = nullptr;

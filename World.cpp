@@ -196,10 +196,10 @@ SimplePixelShader* World::GetPixelShader(const std::string& name)
 
 Material* World::CreateMaterial(
 	const std::string& name, SimpleVertexShader* vertexShader, SimplePixelShader* pixelShader,
-	ID3D11ShaderResourceView* diffuseSRV, ID3D11ShaderResourceView* normalSRV,
+	ID3D11ShaderResourceView* diffuseSRV, ID3D11ShaderResourceView* normalSRV, ID3D11ShaderResourceView* reflectionSRV,
 	ID3D11SamplerState* samplerState, ID3D11BlendState* blendState, ID3D11DepthStencilState* depthStencilState)
 {
-	Material* material = new Material(vertexShader, pixelShader, diffuseSRV, normalSRV, samplerState, blendState, depthStencilState);
+	Material* material = new Material(vertexShader, pixelShader, diffuseSRV, normalSRV, reflectionSRV, samplerState, blendState, depthStencilState);
 	m_materials[name] = material;
 	return material;
 }
@@ -710,7 +710,4 @@ World::~World()
 	for (const auto& pair : m_spriteBatches) {
 		delete pair.second;
 	}
-
 }
-
-

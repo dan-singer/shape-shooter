@@ -30,9 +30,13 @@ void Entity::PrepareMaterial(DirectX::XMFLOAT4X4 view, DirectX::XMFLOAT4X4 proje
 	ps->SetSamplerState("samplerState", material->GetSamplerState());
 	ps->SetShaderResourceView("diffuseTexture", material->GetDiffuse());
 	ps->SetShaderResourceView("normalTexture", material->GetNormals());
+	ps->SetShaderResourceView("reflectionTexture", material->GetReflectionSRV());
 	ps->SetData("lights", lights, sizeof(LightComponent::Light) * MAX_LIGHTS);
 	ps->SetInt("lightCount", numLights);
 	ps->SetFloat("shininess", material->m_shiniess);
+	ps->SetFloat("metalness", material->m_metalness);
+	ps->SetFloat("roughness", material->m_roughness);
+	ps->SetFloat3("specColor", material->m_specColor);
 	ps->SetShader();
 	ps->CopyAllBufferData();
 }
