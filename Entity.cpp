@@ -14,7 +14,7 @@ void Entity::PrepareMaterial(DirectX::XMFLOAT4X4 view, DirectX::XMFLOAT4X4 proje
 	SimplePixelShader* ps = material->GetPixelShader();
 
 	vs->SetMatrix4x4("world", GetTransform()->GetWorldMatrix());
-	if (HasTag("ui")) {
+	if (HasTag("ammoUI")) {
 		XMFLOAT4X4 identity;
 		XMStoreFloat4x4(&identity, XMMatrixIdentity());
 		vs->SetMatrix4x4("view", identity);

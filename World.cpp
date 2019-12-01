@@ -459,6 +459,7 @@ void World::DrawEntities(ID3D11DeviceContext* context, DirectX::SpriteBatch* spr
 
 	std::queue<Entity*> uiEntities;
 	std::queue<Entity*> particleEntities;
+	Entity* ammoUI = FindWithTag("ammoUI");
 
 	UINT stride = sizeof(Vertex);
 	UINT offset = 0;
@@ -473,6 +474,10 @@ void World::DrawEntities(ID3D11DeviceContext* context, DirectX::SpriteBatch* spr
 		// Delay rendering Particle Emitters 
 		else if (entity->GetEmitter()) {
 			particleEntities.push(entity);
+		}
+		// Delay ammo model render to UI render
+		else if (entity == ammoUI) {
+			continue;
 		}
 		// Render traditional 3D entities
 		else if (entity->GetMesh() && entity->GetMaterial()) {
@@ -559,7 +564,7 @@ void World::DrawEntities(ID3D11DeviceContext* context, DirectX::SpriteBatch* spr
 		context->RSSetState(0);
 	}
 
-	spriteBatch->Begin();
+	spriteBatch->Begin(SpriteSortMode_Deferred, m_states->NonPremultiplied());
 	while (!uiEntities.empty()) {
 		Entity* entity = uiEntities.front();
 		uiEntities.pop();
@@ -624,6 +629,19 @@ void World::DrawEntities(ID3D11DeviceContext* context, DirectX::SpriteBatch* spr
 		}
 	}
 	spriteBatch->End();
+
+	if(ammoUI && ammoUI->GetMaterial() && ammoUI->GetMesh())
+	{
+		ammoUI->PrepareMaterial(
+			m_mainCamera->GetViewMatrix(), m_mainCamera->GetProjectionMatrix(),
+			m_mainCamera->GetOwner()->GetTransform()->GetPosition(),
+			m_lights, m_activeLightCount);
+		ID3D11Buffer* ammoUIVB = ammoUI->GetMesh()->GetVertexBuffer();
+		context->IASetVertexBuffers(0, 1, &ammoUIVB, &stride, &offset);
+		context->IASetIndexBuffer(ammoUI->GetMesh()->GetIndexBuffer(), DXGI_FORMAT_R32_UINT, 0);
+		context->DrawIndexed(ammoUI->GetMesh()->GetIndexCount(), 0, 0);
+	}
+
 	// Reset any states that may be changed by sprite batch!
 	float blendFactor[4] = { 1,1,1,1 };
 	context->OMSetBlendState(0, blendFactor, 0xFFFFFFFF);
@@ -648,6 +666,7 @@ World::~World()
 	delete m_overlappingPairCache;
 	delete m_dispatcher;
 	delete m_collisionConfiguration;
+	delete m_states;
 
 
 	// Delete the entities

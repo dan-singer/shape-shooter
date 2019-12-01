@@ -59,7 +59,7 @@ Game::~Game()
 // --------------------------------------------------------
 void Game::Init()
 {
-	sensitivity = 1.2;
+	sensitivity = 1.2f;
 	GetClientRect(hWnd, &rect);
 
 	LoadResources();
@@ -98,6 +98,7 @@ void Game::LoadResources()
 	//sky shaders
 	SimpleVertexShader* vsSky = world->CreateVertexShader("vsSky", device, context, L"VSSkyBox.cso");
 	SimplePixelShader* psSky = world->CreatePixelShader("psSky", device, context, L"PSSkyBox.cso");
+	// Particle shaders
 	SimpleVertexShader* particleVs = world->CreateVertexShader("particle", device, context, L"ParticleVS.cso");
 	SimplePixelShader* particlePs = world->CreatePixelShader("particle", device, context, L"ParticlePS.cso");
 
@@ -106,9 +107,10 @@ void Game::LoadResources()
 	world->CreateTexture("metal", device, context, L"Assets/Textures/BareMetal.png");
 	world->CreateTexture("velvet_normal", device, context, L"Assets/Textures/Velvet_N.jpg");
 	world->CreateTexture("particle", device, context, L"Assets/Textures/particle.jpg");
+	world->CreateTexture("cockpit", device, context, L"Assets/Textures/Cockpit.png");
 
 	//skyTexture
-	world->CreateCubeTexture("sky", device, context, L"Assets/Textures/SpaceTwo.dds");
+	world->CreateCubeTexture("sky", device, context, L"Assets/Textures/spacebox.dds");
 
 	// Create the sampler state
 	D3D11_SAMPLER_DESC samplerDesc = {};
@@ -131,10 +133,10 @@ void Game::LoadResources()
 	ds.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
 	ds.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
 	world->CreateDepthStencilState("skyDepthState", &ds, device);
-	// UI
+
+	// UI Resources
 	world->CreateSpriteBatch("main", context);
 	world->CreateFont("Open Sans", device, L"Assets/Fonts/open-sans.spritefont");
-
 
 	// Particles
 	D3D11_DEPTH_STENCIL_DESC particleDsDesc = {};
@@ -172,15 +174,13 @@ void Game::LoadResources()
 		world->GetBlendState("particle"),
 		world->GetDepthStencilState("particle")
 	);
+	world->CreateMaterial("cockpitHUD", vs, uiPs, world->GetTexture("cockpit"), nullptr, world->GetSamplerState("main"));
 
 }
 
 
 void Game::LoadMainMenu()
 {
-
-	ShowCursor(true);
-
 	World* world = World::GetInstance();
 
 	Entity* camera = world->Instantiate("Cam");
@@ -314,7 +314,7 @@ void Game::LoadGame()
 	ammoVis->AddComponent<AmmoVisualizer>()->SetParent(camera);
 	ammoVis->GetTransform()->SetScale(XMFLOAT3(.5f, .5f, .5f));
 	ammoVis->GetTransform()->SetPosition(XMFLOAT3(-1.5f, -0.8f, 3));
-	ammoVis->AddTag("ui");
+	ammoVis->AddTag("ammoUI");
 
 	// Light Entities
 	Entity* dirLight = world->Instantiate("DirLight1");
@@ -322,11 +322,34 @@ void Game::LoadGame()
 	dirLightComp->m_data.type = LightComponent::Directional;
 	dirLightComp->m_data.color = XMFLOAT3(1.0f, 1.0f, 1.0f);
 	dirLightComp->m_data.intensity = 1.0f;
+
+	// UI elements
+	Entity* cockpit = world->Instantiate("Cockpit");
+	cockpit->AddComponent<UITransform>()->Init(
+		Anchor::CENTER_CENTER,
+		0.0f,
+		XMFLOAT2(0.5f, 0.5f),
+		XMFLOAT2(1.25f, 1.0f),
+		XMFLOAT2(0.0f, 0.0f)
+	);
+	cockpit->AddComponent<MaterialComponent>()->m_material = world->GetMaterial("cockpitHUD");
+	Entity* score = world->Instantiate("Score");
+	score->AddComponent<UITransform>()->Init(
+		Anchor::BOTTOM_CENTER,
+		0.0f,
+		XMFLOAT2(1.0f, 2.5f),
+		XMFLOAT2(1.25f, 1.0f),
+		XMFLOAT2(0.0f, 0.0f)
+	);
+	score->AddComponent<UITextComponent>()->Init(
+		"0",
+		world->GetFont("Open Sans"),
+		Colors::White
+	);
 }
 
 void Game::LoadCredits()
 {
-	ShowCursor(true);
 
 	World* world = World::GetInstance();
 
