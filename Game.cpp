@@ -98,6 +98,7 @@ void Game::LoadResources()
 	//sky shaders
 	SimpleVertexShader* vsSky = world->CreateVertexShader("vsSky", device, context, L"VSSkyBox.cso");
 	SimplePixelShader* psSky = world->CreatePixelShader("psSky", device, context, L"PSSkyBox.cso");
+	// Particle shaders
 	SimpleVertexShader* particleVs = world->CreateVertexShader("particle", device, context, L"ParticleVS.cso");
 	SimplePixelShader* particlePs = world->CreatePixelShader("particle", device, context, L"ParticlePS.cso");
 
@@ -132,10 +133,10 @@ void Game::LoadResources()
 	ds.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
 	ds.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
 	world->CreateDepthStencilState("skyDepthState", &ds, device);
-	// UI
+
+	// UI Resources
 	world->CreateSpriteBatch("main", context);
 	world->CreateFont("Open Sans", device, L"Assets/Fonts/open-sans.spritefont");
-
 
 	// Particles
 	D3D11_DEPTH_STENCIL_DESC particleDsDesc = {};
@@ -313,7 +314,7 @@ void Game::LoadGame()
 	ammoVis->AddComponent<AmmoVisualizer>()->SetParent(camera);
 	ammoVis->GetTransform()->SetScale(XMFLOAT3(.5f, .5f, .5f));
 	ammoVis->GetTransform()->SetPosition(XMFLOAT3(-1.5f, -0.8f, 3));
-	ammoVis->AddTag("ui");
+	ammoVis->AddTag("ammoUI");
 
 	// Light Entities
 	Entity* dirLight = world->Instantiate("DirLight1");

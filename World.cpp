@@ -459,7 +459,7 @@ void World::DrawEntities(ID3D11DeviceContext* context, DirectX::SpriteBatch* spr
 
 	std::queue<Entity*> uiEntities;
 	std::queue<Entity*> particleEntities;
-	Entity* ammoUI = nullptr;
+	Entity* ammoUI = FindWithTag("ammoUI");
 
 	UINT stride = sizeof(Vertex);
 	UINT offset = 0;
@@ -476,8 +476,8 @@ void World::DrawEntities(ID3D11DeviceContext* context, DirectX::SpriteBatch* spr
 			particleEntities.push(entity);
 		}
 		// Delay ammo model render to UI render
-		else if (entity == FindWithTag("ui") && (entity->GetMesh() && entity->GetMaterial())) {
-			ammoUI = entity;
+		else if (entity == ammoUI) {
+			continue;
 		}
 		// Render traditional 3D entities
 		else if (entity->GetMesh() && entity->GetMaterial()) {
@@ -630,7 +630,7 @@ void World::DrawEntities(ID3D11DeviceContext* context, DirectX::SpriteBatch* spr
 	}
 	spriteBatch->End();
 
-	if(ammoUI)
+	if(ammoUI && ammoUI->GetMaterial() && ammoUI->GetMesh())
 	{
 		ammoUI->PrepareMaterial(
 			m_mainCamera->GetViewMatrix(), m_mainCamera->GetProjectionMatrix(),

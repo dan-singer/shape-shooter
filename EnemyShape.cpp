@@ -9,7 +9,7 @@
 using namespace DirectX;
 void EnemyShape::Start()
 {
-
+	m_scoreText = World::GetInstance()->Find("Score")->GetComponent<UITextComponent>();
 }
 
 void EnemyShape::Tick(float deltaTime)
@@ -37,11 +37,11 @@ void EnemyShape::OnCollisionBegin(Entity* other)
 		explosion->AddComponent<TimedDestructor>()->SetDuration(2.0f);
 		explosion->GetTransform()->SetPosition(GetOwner()->GetTransform()->GetPosition());
 
+		int score = std::stoi(m_scoreText->m_text);
+		score++;
+		m_scoreText->m_text = std::to_string(score);
+
 		World::GetInstance()->Destroy(other);
 		World::GetInstance()->Destroy(GetOwner());
-
-		int score = std::stoi(world->Find("Score")->GetComponent<UITextComponent>()->m_text);
-		score++;
-		world->Find("Score")->GetComponent<UITextComponent>()->m_text = std::to_string(score);
 	}
 }
