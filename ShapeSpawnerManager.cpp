@@ -11,11 +11,23 @@ using namespace DirectX;
 ShapeSpawnerManagerComponent::ShapeSpawnerManagerComponent(Entity* entity) : Component(entity)
 {
 	srand(time(NULL));
+	spawnTimer = 0.0f;
+	timeUntilSpawn = 2.0f;
 }
 
 void ShapeSpawnerManagerComponent::Tick(float deltaTime)
 {
-	spawnShapes();
+	//update spawn timer
+	spawnTimer += deltaTime;
+	if (spawnTimer > timeUntilSpawn)
+	{
+		spawnShapes();//spawn shape
+		spawnTimer = 0.0f;
+		//pick a random number between 0 and 10
+		int randomNum = rand() % 11;
+		//create the next time a shape should spawn from now between 1.5 and 2.5 seconds
+		timeUntilSpawn = 1.5f + (float)randomNum / 10.0f;
+	}
 }
 
 void ShapeSpawnerManagerComponent::Start()
@@ -24,9 +36,11 @@ void ShapeSpawnerManagerComponent::Start()
 
 void ShapeSpawnerManagerComponent::spawnShapes()
 {
+	int type = rand() % 6;
 	World* world = World::GetInstance();
+	//XMVECTOR shipPos = world->m_mainCamera;
 	//cubes
-	if (rand() % 100000 == 0)
+	if (type == 0)
 	{
 		Entity* cube1 = world->Instantiate("cube1");
 		cube1->GetTransform()->SetPosition(XMFLOAT3(rand() % 10 - 5, rand() % 10 - 5, rand() % 10 - 5));
@@ -39,7 +53,7 @@ void ShapeSpawnerManagerComponent::spawnShapes()
 		rotCube->eulerDelta.y = 1.0f;
 	}
 	//cones
-	if (rand() % 100000 == 0)
+	if (type == 1)
 	{
 		Entity* cone1 = world->Instantiate("cone1");
 		cone1->GetTransform()->SetPosition(XMFLOAT3(rand() % 10 - 5, rand() % 10 - 5, rand() % 5));
@@ -53,7 +67,7 @@ void ShapeSpawnerManagerComponent::spawnShapes()
 		rotCone->eulerDelta.y = 1.0f;
 	}
 	//cylinders
-	if (rand() % 100000 == 0)
+	if (type == 2)
 	{
 		Entity* cylinder1 = world->Instantiate("cylinder1");
 		cylinder1->GetTransform()->SetPosition(XMFLOAT3(rand() % 10 - 5, rand() % 10 - 5, rand() % 5));
@@ -67,7 +81,7 @@ void ShapeSpawnerManagerComponent::spawnShapes()
 		rotCyl->eulerDelta.y = 1.0f;
 	}
 	//helix
-	if (rand() % 100000 == 0)
+	if (type == 3)
 	{
 		Entity* helix1 = world->Instantiate("helix1");
 		helix1->GetTransform()->SetPosition(XMFLOAT3(rand() % 10 - 5, rand() % 10 - 5, rand() % 5));
@@ -81,7 +95,7 @@ void ShapeSpawnerManagerComponent::spawnShapes()
 		rothelix->eulerDelta.y = 5.0f;
 	}
 	//sphere
-	if (rand() % 100000 == 0)
+	if (type == 4)
 	{
 		Entity* sphere1 = world->Instantiate("sphere1");
 		sphere1->GetTransform()->SetPosition(XMFLOAT3(rand() % 10 - 5, rand() % 10 - 5, rand() % 5));
@@ -95,7 +109,7 @@ void ShapeSpawnerManagerComponent::spawnShapes()
 		rotSphere->eulerDelta.y = 1.0f;
 	}
 	//torus
-	if (rand() % 100000 == 0)
+	if (type == 5)
 	{
 		Entity* torus1 = world->Instantiate("torus1");
 		torus1->GetTransform()->SetPosition(XMFLOAT3(rand() % 10 - 5, rand() % 10 - 5, rand() % 5));
