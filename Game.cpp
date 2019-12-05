@@ -286,8 +286,7 @@ void Game::LoadGame()
 
 	World* world = World::GetInstance();
 
-	Entity* ShapeSpawnManager = world->Instantiate("ShapeSpawnManager");
-	ShapeSpawnerManagerComponent* ss = ShapeSpawnManager->AddComponent<ShapeSpawnerManagerComponent>();
+
 
 	Entity* camera = world->Instantiate("Cam");
 	CameraComponent* cc = camera->AddComponent<CameraComponent>();
@@ -307,6 +306,8 @@ void Game::LoadGame()
 	launcher->AddAmmoMesh(world->GetMesh("helix"));
 	launcher->AddAmmoMesh(world->GetMesh("torus"));
 
+	Entity* ShapeSpawnManager = world->Instantiate("ShapeSpawnManager");
+	ShapeSpawnerManagerComponent* ss = ShapeSpawnManager->AddComponent<ShapeSpawnerManagerComponent>();
 
 	world->m_mainCamera = cc;
 
