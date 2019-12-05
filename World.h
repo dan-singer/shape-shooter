@@ -52,7 +52,7 @@ private:
 	btBroadphaseInterface* m_overlappingPairCache;
 	btSequentialImpulseConstraintSolver* m_solver;
 	btDiscreteDynamicsWorld* m_dynamicsWorld;
-	btVector3 m_gravity = btVector3(0, -9.81f, 0);
+	btVector3 m_gravity = btVector3(0, 0, 0);
 	std::map<const btCollisionObject*, std::set<const btCollisionObject*>> m_collisionMap;
 
 	DirectX::CommonStates* m_states;

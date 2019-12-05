@@ -7,6 +7,9 @@
 #include "Entity.h"
 #include "CameraComponent.h"
 #include "LightComponent.h"
+#include <functional>
+
+typedef std::function<void()> Action;
 
 class Game 
 	: public DXCore
@@ -42,6 +45,7 @@ private:
 	void LoadMainMenu();
 	void LoadGame();
 	void LoadCredits();
+	void LoadGameOver();
 	float sensitivity; //Putting this here since we're decuppling mouse from the movement component
 	RECT rect; //struct representing the rectangle that is our window
 	// Keeps track of the old mouse position.  Useful for 

@@ -3,6 +3,9 @@
 #include <stdlib.h>
 #include <time.h>
 #include <DirectXMath.h>
+#include <functional>
+
+typedef std::function<void()> Action;
 
 class ShapeSpawnerManagerComponent : public Component
 {
@@ -11,5 +14,7 @@ public:
 	void spawnShapes();
 	virtual void Tick(float deltaTime) override;
 	virtual void Start() override;
+	Action OnLose = nullptr;
+
 };
 

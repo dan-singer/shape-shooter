@@ -15,6 +15,8 @@ public:
 	void SetSpeed(float n_speed);
 	float GetSpeed();
 
+	bool m_doShit = true;
+
 	void SetSensitivity(float n_sense);
 	float GetSensitivity();
 

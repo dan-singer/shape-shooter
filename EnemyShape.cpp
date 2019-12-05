@@ -5,7 +5,8 @@
 #include <DirectXMath.h>
 #include "TimedDestructor.h"
 #include "UITextComponent.h"
-
+#include "MovementComponent.h"
+#include "Launcher.h"
 using namespace DirectX;
 void EnemyShape::Start()
 {
@@ -27,6 +28,11 @@ void EnemyShape::Tick(float deltaTime)
 
 void EnemyShape::OnCollisionBegin(Entity* other)
 {
+	if (other->HasTag("player"))
+	{
+		printf("memes");
+		//OnLose();
+	}
 	if (GetOwner()->GetMesh() == other->GetMesh()) {
 
 		World* world = World::GetInstance();
@@ -44,4 +50,6 @@ void EnemyShape::OnCollisionBegin(Entity* other)
 		World::GetInstance()->Destroy(other);
 		World::GetInstance()->Destroy(GetOwner());
 	}
+
 }
+

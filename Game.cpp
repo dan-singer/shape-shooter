@@ -289,6 +289,12 @@ void Game::LoadGame()
 	Entity* ShapeSpawnManager = world->Instantiate("ShapeSpawnManager");
 	ShapeSpawnerManagerComponent* ss = ShapeSpawnManager->AddComponent<ShapeSpawnerManagerComponent>();
 
+	ss->OnLose = [&]() {
+
+		world->DestroyAllEntities();
+		LoadGameOver();
+	};
+
 	Entity* camera = world->Instantiate("Cam");
 	CameraComponent* cc = camera->AddComponent<CameraComponent>();
 	cc->UpdateProjectionMatrix((float)width / height);
@@ -297,6 +303,20 @@ void Game::LoadGame()
 	mc->SetSpeed(1.5f); // ** SET SPEED FOR MOVEMENT HERE **
 	mc->SetSensitivity(0.002f); // ** SET SENSITIVITY OF CAMERA HERE **
 	mc->GetWindow(&hWnd, &width, &height); //Get window as a pointer
+	RigidBodyComponent* rbc = camera->AddComponent<RigidBodyComponent>();
+	rbc->SetSphereCollider(1.0f);
+	// rbc->m_mass = 1.0f;
+	camera->AddTag("player");
+
+	Entity* tester = world->Instantiate("Tester");
+	tester->AddComponent<MeshComponent>()->m_mesh = world->GetMesh("cube");
+	tester->AddComponent<MaterialComponent>()->m_material = world->GetMaterial("metal");
+	rbc = tester->AddComponent<RigidBodyComponent>();
+	rbc->SetBoxCollider(.5f, .5f, .5f);
+	rbc->m_mass = 1.0f;
+	tester->AddComponent<CollisionTester>();
+	tester->StartAllComponents();
+	rbc->ApplyImpulse(XMFLOAT3(0.00000001f, 0, 0));
 
 	Launcher* launcher = camera->AddComponent<Launcher>();
 	launcher->SetAmmoMaterial(world->GetMaterial("metal"));
@@ -397,6 +417,12 @@ void Game::LoadCredits()
 		LoadMainMenu();
 	});
 
+}
+
+void Game::LoadGameOver()
+{
+	//Do game over things here
+	printf("Lost");
 }
 
 // --------------------------------------------------------

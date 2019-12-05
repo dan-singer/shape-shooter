@@ -33,7 +33,8 @@ void ShapeSpawnerManagerComponent::spawnShapes()
 		cube1->AddComponent<MeshComponent>()->m_mesh = world->GetMesh("cube");
 		cube1->AddComponent<MaterialComponent>()->m_material = world->GetMaterial("metal");
 		cube1->AddComponent<RigidBodyComponent>()->SetBoxCollider(.5f, .5f, .5f);
-		cube1->AddComponent<EnemyShape>();
+		cube1->AddComponent<EnemyShape>()->OnLose = OnLose;
+
 		Rotator* rotCube = cube1->AddComponent<Rotator>();
 		rotCube->eulerDelta.x = 1.0f;
 		rotCube->eulerDelta.y = 1.0f;
@@ -46,7 +47,7 @@ void ShapeSpawnerManagerComponent::spawnShapes()
 		cone1->AddComponent<MeshComponent>()->m_mesh = world->GetMesh("cone");
 		cone1->AddComponent<MaterialComponent>()->m_material = world->GetMaterial("metal");
 		cone1->AddComponent<RigidBodyComponent>()->SetBoxCollider(.5f, .5f, .5f);
-		cone1->AddComponent<EnemyShape>();
+		cone1->AddComponent<EnemyShape>()->OnLose = OnLose;
 
 		Rotator* rotCone = cone1->AddComponent<Rotator>();
 		rotCone->eulerDelta.x = 2.0f;
@@ -60,7 +61,7 @@ void ShapeSpawnerManagerComponent::spawnShapes()
 		cylinder1->AddComponent<MeshComponent>()->m_mesh = world->GetMesh("cylinder");
 		cylinder1->AddComponent<MaterialComponent>()->m_material = world->GetMaterial("metal");
 		cylinder1->AddComponent<RigidBodyComponent>()->SetBoxCollider(.5f, .5f, .5f);
-		cylinder1->AddComponent<EnemyShape>();
+		cylinder1->AddComponent<EnemyShape>()->OnLose = OnLose;
 
 		Rotator* rotCyl = cylinder1->AddComponent<Rotator>();
 		rotCyl->eulerDelta.x = 5.0f;
@@ -74,7 +75,7 @@ void ShapeSpawnerManagerComponent::spawnShapes()
 		helix1->AddComponent<MeshComponent>()->m_mesh = world->GetMesh("helix");
 		helix1->AddComponent<MaterialComponent>()->m_material = world->GetMaterial("metal");
 		helix1->AddComponent<RigidBodyComponent>()->SetBoxCollider(.5f, .5f, .5f);
-		helix1->AddComponent<EnemyShape>();
+		helix1->AddComponent<EnemyShape>()->OnLose = OnLose;
 
 		Rotator* rothelix = helix1->AddComponent<Rotator>();
 		rothelix->eulerDelta.x = 1.0f;
@@ -88,7 +89,7 @@ void ShapeSpawnerManagerComponent::spawnShapes()
 		sphere1->AddComponent<MeshComponent>()->m_mesh = world->GetMesh("sphere");
 		sphere1->AddComponent<MaterialComponent>()->m_material = world->GetMaterial("metal");
 		sphere1->AddComponent<RigidBodyComponent>()->SetBoxCollider(.5f, .5f, .5f);
-		sphere1->AddComponent<EnemyShape>();
+		sphere1->AddComponent<EnemyShape>()->OnLose = OnLose;
 
 		Rotator* rotSphere = sphere1->AddComponent<Rotator>();
 		rotSphere->eulerDelta.x = 1.0f;
@@ -102,7 +103,7 @@ void ShapeSpawnerManagerComponent::spawnShapes()
 		torus1->AddComponent<MeshComponent>()->m_mesh = world->GetMesh("torus");
 		torus1->AddComponent<MaterialComponent>()->m_material = world->GetMaterial("metal");
 		torus1->AddComponent<RigidBodyComponent>()->SetBoxCollider(.5f, .5f, .5f);
-		torus1->AddComponent<EnemyShape>();
+		torus1->AddComponent<EnemyShape>()->OnLose = OnLose;
 
 		Rotator* rotTorus = torus1->AddComponent<Rotator>();
 		rotTorus->eulerDelta.x = 1.0f;
