@@ -290,9 +290,9 @@ void Game::LoadGame()
 	ShapeSpawnerManagerComponent* ss = ShapeSpawnManager->AddComponent<ShapeSpawnerManagerComponent>();
 
 	ss->OnLose = [&]() {
-
+		World* world = World::GetInstance();
 		world->DestroyAllEntities();
-		LoadGameOver();
+		//LoadGameOver();
 	};
 
 	Entity* camera = world->Instantiate("Cam");
@@ -305,18 +305,8 @@ void Game::LoadGame()
 	mc->GetWindow(&hWnd, &width, &height); //Get window as a pointer
 	RigidBodyComponent* rbc = camera->AddComponent<RigidBodyComponent>();
 	rbc->SetSphereCollider(1.0f);
-	// rbc->m_mass = 1.0f;
 	camera->AddTag("player");
 
-	Entity* tester = world->Instantiate("Tester");
-	tester->AddComponent<MeshComponent>()->m_mesh = world->GetMesh("cube");
-	tester->AddComponent<MaterialComponent>()->m_material = world->GetMaterial("metal");
-	rbc = tester->AddComponent<RigidBodyComponent>();
-	rbc->SetBoxCollider(.5f, .5f, .5f);
-	rbc->m_mass = 1.0f;
-	tester->AddComponent<CollisionTester>();
-	tester->StartAllComponents();
-	rbc->ApplyImpulse(XMFLOAT3(0.00000001f, 0, 0));
 
 	Launcher* launcher = camera->AddComponent<Launcher>();
 	launcher->SetAmmoMaterial(world->GetMaterial("metal"));
@@ -422,7 +412,7 @@ void Game::LoadCredits()
 void Game::LoadGameOver()
 {
 	//Do game over things here
-	printf("Lost");
+	printf("Lost\n");
 }
 
 // --------------------------------------------------------
@@ -441,7 +431,7 @@ void Game::OnResize()
 // --------------------------------------------------------
 void Game::Update(float deltaTime, float totalTime)
 {
-	if (allowCameraRotation) {
+	if (allowCameraRotation && World::GetInstance()->m_mainCamera) {
 		//MOUSE MOVEMENT
 		// Get current position
 		POINT cursorPos = {};
