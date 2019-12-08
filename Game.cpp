@@ -17,6 +17,8 @@
 #include <SpriteFont.h>
 #include "UITextComponent.h"
 #include "ButtonComponent.h"
+#include <fmod/fmod.hpp>
+#include "SoundComponent.h"
 
 // For the DirectX Math library
 using namespace DirectX;
@@ -181,6 +183,8 @@ void Game::LoadResources()
 	);
 	world->CreateMaterial("cockpitHUD", vs, uiPs, world->GetTexture("cockpit"), nullptr, skyTex, world->GetSamplerState("main"));
 
+	// Audio
+	world->CreateSound("jump", "Assets/Audio/Jump.wav");
 }
 
 
