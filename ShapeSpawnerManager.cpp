@@ -90,6 +90,7 @@ void ShapeSpawnerManagerComponent::spawnShape(std::string shape, float x, float 
 	shape1->AddComponent<MaterialComponent>()->m_material = world->GetMaterial("metal");
 	shape1->AddComponent<RigidBodyComponent>()->SetBoxCollider(.5f, .5f, .5f);
 	shape1->AddComponent<EnemyShape>();
+	shape1->AddComponent<SoundComponent>()->SetSound(world->GetSound("hitFail"));
 
 	Rotator* rot = shape1->AddComponent<Rotator>();
 	rot->eulerDelta.x = 1.0f;

@@ -1,5 +1,6 @@
 #pragma once
 #include "Component.h"
+#include "SoundComponent.h"
 #include "Mesh.h"
 #include "Material.h"
 #include <vector>
@@ -18,6 +19,8 @@ private:
 
 	bool m_wasPrevPressed = false;
 	bool m_wasNextPressed = false;
+
+	SoundComponent* m_soundComponent = nullptr;
 
 	void WrapSpawnIndex();
 	void SpawnProjectile();

@@ -184,7 +184,9 @@ void Game::LoadResources()
 	world->CreateMaterial("cockpitHUD", vs, uiPs, world->GetTexture("cockpit"), nullptr, skyTex, world->GetSamplerState("main"));
 
 	// Audio
-	world->CreateSound("jump", "Assets/Audio/Jump.wav");
+	world->CreateSound("explosion", "Assets/Audio/explosion.wav");
+	world->CreateSound("fire", "Assets/Audio/fire.wav");
+	world->CreateSound("hitFail", "Assets/Audio/hitFail.wav");
 }
 
 
@@ -310,8 +312,12 @@ void Game::LoadGame()
 	launcher->AddAmmoMesh(world->GetMesh("helix"));
 	launcher->AddAmmoMesh(world->GetMesh("torus"));
 
+	SoundComponent* camSC = camera->AddComponent<SoundComponent>();
+	camSC->SetSound(world->GetSound("fire"));
+
 	Entity* ShapeSpawnManager = world->Instantiate("ShapeSpawnManager");
 	ShapeSpawnerManagerComponent* ss = ShapeSpawnManager->AddComponent<ShapeSpawnerManagerComponent>();
+	ShapeSpawnManager->AddComponent<SoundComponent>();
 
 	world->m_mainCamera = cc;
 

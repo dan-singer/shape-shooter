@@ -494,6 +494,8 @@ void World::Tick(float deltaTime)
 		}
 	}
 
+	m_soundSystem->update();
+
 	// Spawn and destroy entities **after** iterating through them
 	Flush();
 }
