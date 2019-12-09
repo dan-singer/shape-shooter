@@ -34,6 +34,7 @@ private:
 	std::map<std::string, SimplePixelShader*> m_pixelShaders;
 	std::map<std::string, Material*> m_materials;
 	std::map<std::string, ID3D11ShaderResourceView*> m_SRVs;
+	std::map<std::string, ID3D11RenderTargetView*> m_RTVs;
 	std::map<std::string, ID3D11ShaderResourceView*>m_cubeSRVs;
 	std::map<std::string, ID3D11SamplerState*> m_samplerStates;
 	std::map<std::string, ID3D11RasterizerState*> m_rastStates;
@@ -158,6 +159,7 @@ public:
 	// Creates a shader resource view and returns it
 	// --------------------------------------------------------
 	ID3D11ShaderResourceView* CreateTexture(const std::string& name, ID3D11Device* device, ID3D11DeviceContext* context, const wchar_t* fileName);
+	ID3D11ShaderResourceView* CreateTexture(const std::string& name, ID3D11Device* device, ID3D11Texture2D* textureResource, const D3D11_SHADER_RESOURCE_VIEW_DESC* desc);
 	ID3D11ShaderResourceView* GetTexture(const std::string& name);
 
 	// --------------------------------------------------------
@@ -165,6 +167,12 @@ public:
 	// --------------------------------------------------------
 	ID3D11ShaderResourceView* CreateCubeTexture(const std::string& name, ID3D11Device* device, ID3D11DeviceContext* context, const wchar_t* fileName);
 	ID3D11ShaderResourceView* GetCubeTexture(const std::string& name);
+
+	// --------------------------------------------------------
+	// Creates a render target view and returns it
+	// --------------------------------------------------------
+	ID3D11RenderTargetView* CreateRenderTargetView(const std::string& name, ID3D11Device* device, ID3D11Texture2D* textureResource, const D3D11_RENDER_TARGET_VIEW_DESC* desc);
+	ID3D11RenderTargetView* GetRenderTargetView(const std::string& name);
 
 	// --------------------------------------------------------
 	// Create a sampler state and store it in the internal map
@@ -222,7 +230,7 @@ public:
 	// --------------------------------------------------------
 	// Draws all entities using the device context
 	// --------------------------------------------------------
-	void DrawEntities(ID3D11DeviceContext* context, DirectX::SpriteBatch* spriteBatch, int screenWidth, int screenHeight);
+	void DrawEntities(ID3D11DeviceContext* context, ID3D11RenderTargetView* backBufferRTV, ID3D11DepthStencilView* depthStencilView, DirectX::SpriteBatch* spriteBatch, int screenWidth, int screenHeight);
 
 	~World();
 };
