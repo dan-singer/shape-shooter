@@ -42,7 +42,7 @@ private:
 	void LoadMainMenu();
 	void LoadGame();
 	void LoadCredits();
-	float sensitivity; //Putting this here since we're decuppling mouse from the movement component
+	float sensitivity; //Putting this here since we're decoupling mouse from the movement component
 	RECT rect; //struct representing the rectangle that is our window
 	// Keeps track of the old mouse position.  Useful for 
 	// determining how far the mouse moved in a single frame.

@@ -62,7 +62,9 @@ void Entity::StartAllComponents()
 {
 	if (!m_hasStarted) {
 		for (Component* component : m_components) {
-			component->Start();
+			if (component->GetEnabled()) {
+				component->Start();
+			}
 		}
 		m_hasStarted = true;
 	}

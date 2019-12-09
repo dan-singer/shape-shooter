@@ -50,10 +50,14 @@ void Launcher::SpawnProjectile()
 	XMStoreFloat3(&impulse, impulseVec);
 
 	projectile->GetRigidBody()->ApplyImpulse(impulse);
+
+	// SFX
+	m_soundComponent->Play();
 }
 
 void Launcher::Start()
 {
+	m_soundComponent = GetOwner()->GetComponent<SoundComponent>();
 }
 
 void Launcher::Tick(float deltaTime)
