@@ -19,9 +19,9 @@ private:
 	ID3D11DepthStencilState* m_depthStencilState;
 public:
 	float m_shiniess = 128.0f;
-	float m_roughness = 0; //How rouch the object is 0 is a mirror
-	float m_metalness = 0; //How metallic the object is 1 is a mirror
-	DirectX::XMFLOAT3 m_specColor = DirectX::XMFLOAT3(0.04, 0.04, 0.04);
+	float m_roughness = 0.0f; //How rouch the object is 0 is a mirror
+	float m_metalness = 0.0f; //How metallic the object is 1 is a mirror
+	DirectX::XMFLOAT3 m_specColor = DirectX::XMFLOAT3(0.04f, 0.04f, 0.04f);
 	// --------------------------------------------------------
 	// Construct a Material from shaders and textures
 	// @param SimpleVertexShader * vertexShader

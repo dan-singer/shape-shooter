@@ -217,6 +217,15 @@
     <FxCompile Include="psSkyBox.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
+    <FxCompile Include="psSkyBox.hlsl" />
+    <FxCompile Include="psSkyBox.hlsl" />
+    <FxCompile Include="psSkyBox.hlsl" />
+    <FxCompile Include="BlurPS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="BlurVS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

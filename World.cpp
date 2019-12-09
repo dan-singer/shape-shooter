@@ -216,6 +216,13 @@ ID3D11ShaderResourceView* World::CreateTexture(const std::string& name, ID3D11De
 	return m_SRVs[name];
 }
 
+ID3D11ShaderResourceView* World::CreateTexture(const std::string& name, ID3D11Device* device, ID3D11Texture2D* textureResource, const D3D11_SHADER_RESOURCE_VIEW_DESC* desc)
+{
+	m_SRVs[name] = nullptr;
+	device->CreateShaderResourceView(textureResource, desc, &m_SRVs[name]);
+	return m_SRVs[name];
+}
+
 ID3D11ShaderResourceView* World::GetTexture(const std::string& name)
 {
 	return m_SRVs[name];
@@ -230,6 +237,18 @@ ID3D11ShaderResourceView* World::CreateCubeTexture(const std::string& name, ID3D
 ID3D11ShaderResourceView* World::GetCubeTexture(const std::string& name)
 {
 	return m_cubeSRVs[name];
+}
+
+ID3D11RenderTargetView* World::CreateRenderTargetView(const std::string& name, ID3D11Device* device, ID3D11Texture2D* textureResource, const D3D11_RENDER_TARGET_VIEW_DESC* desc)
+{
+	m_RTVs[name] = nullptr;
+	device->CreateRenderTargetView(textureResource, desc, &m_RTVs[name]);
+	return m_RTVs[name];
+}
+
+ID3D11RenderTargetView* World::GetRenderTargetView(const std::string& name)
+{
+	return m_RTVs[name];
 }
 
 ID3D11SamplerState* World::CreateSamplerState(const std::string& name, D3D11_SAMPLER_DESC* description, ID3D11Device* device)
@@ -449,11 +468,14 @@ void World::Tick(float deltaTime)
 	Flush();
 }
 
-void World::DrawEntities(ID3D11DeviceContext* context, DirectX::SpriteBatch* spriteBatch, int screenWidth, int screenHeight)
+void World::DrawEntities(ID3D11DeviceContext* context, ID3D11RenderTargetView* backBufferRTV, ID3D11DepthStencilView* depthStencilView, DirectX::SpriteBatch* spriteBatch, int screenWidth, int screenHeight)
 {
 	if (!m_mainCamera) {
 		return;
 	}
+
+	// Begin motion blur render
+	context->OMSetRenderTargets(1, &m_RTVs["blurTarget"], depthStencilView);
 
 	RebuildLights();
 
@@ -563,6 +585,26 @@ void World::DrawEntities(ID3D11DeviceContext* context, DirectX::SpriteBatch* spr
 		context->OMSetDepthStencilState(0, 0);
 		context->RSSetState(0);
 	}
+
+	// Complete motion blur render
+	context->OMSetRenderTargets(1, &backBufferRTV, 0);
+
+	SimpleVertexShader* blurVS = m_vertexShaders["blurVS"];
+	blurVS->SetShader();
+
+	SimplePixelShader* blurPS = m_pixelShaders["blurPS"];
+	blurPS->SetShaderResourceView("Pixels", m_SRVs["blurSRV"]);
+	blurPS->SetSamplerState("Sampler", m_samplerStates["main"]);
+	blurPS->SetShader();
+
+	ID3D11Buffer* nothing = 0;
+	context->IASetIndexBuffer(0, DXGI_FORMAT_R32_UINT, 0);
+	context->IASetVertexBuffers(0, 1, &nothing, &stride, &offset);
+
+	context->Draw(3, 0);
+
+	ID3D11ShaderResourceView* nullSRVs[16] = {};
+	context->PSSetShaderResources(0, 16, nullSRVs);
 
 	spriteBatch->Begin(SpriteSortMode_Deferred, m_states->NonPremultiplied());
 	while (!uiEntities.empty()) {
@@ -690,6 +732,9 @@ World::~World()
 		delete pair.second;
 	}
 	for (const auto& pair : m_SRVs) {
+		pair.second->Release();
+	}
+	for (const auto& pair : m_RTVs) {
 		pair.second->Release();
 	}
 	for (const auto& pair : m_cubeSRVs) {

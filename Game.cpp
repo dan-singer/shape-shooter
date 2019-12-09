@@ -101,6 +101,9 @@ void Game::LoadResources()
 	// Particle shaders
 	SimpleVertexShader* particleVs = world->CreateVertexShader("particle", device, context, L"ParticleVS.cso");
 	SimplePixelShader* particlePs = world->CreatePixelShader("particle", device, context, L"ParticlePS.cso");
+	// Motion Blur shaders
+	world->CreateVertexShader("blurVS", device, context, L"BlurVS.cso");
+	world->CreatePixelShader("blurPS", device, context, L"BlurPS.cso");
 
 	// Textures
 	world->CreateTexture("leather", device, context, L"Assets/Textures/Leather.jpg");
@@ -157,7 +160,36 @@ void Game::LoadResources()
 	particleBlendDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
 	world->CreateBlendState("particle", &particleBlendDesc, device);
 
-	
+	// Post-processes
+	ID3D11Texture2D* ppTexture;
+	D3D11_TEXTURE2D_DESC textureDesc = {};
+	textureDesc.Width = width;
+	textureDesc.Height = height;
+	textureDesc.ArraySize = 1;
+	textureDesc.BindFlags = D3D10_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
+	textureDesc.CPUAccessFlags = 0;
+	textureDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	textureDesc.MipLevels = 1;
+	textureDesc.MiscFlags = 0;
+	textureDesc.SampleDesc.Count = 1;
+	textureDesc.SampleDesc.Quality = 0;
+	textureDesc.Usage = D3D11_USAGE_DEFAULT;
+	device->CreateTexture2D(&textureDesc, 0, &ppTexture);
+
+	D3D11_RENDER_TARGET_VIEW_DESC rtvDesc = {};
+	rtvDesc.Format = textureDesc.Format;
+	rtvDesc.Texture2D.MipSlice = 0;
+	rtvDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
+	world->CreateRenderTargetView("blurTarget", device, ppTexture, &rtvDesc);
+
+	D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+	srvDesc.Format = textureDesc.Format;
+	srvDesc.Texture2D.MipLevels = 1;
+	srvDesc.Texture2D.MostDetailedMip = 0;
+	srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+	world->CreateTexture("blurSRV", device, ppTexture, &srvDesc);
+
+	ppTexture->Release();
 
 	// Materials
 	world->CreateMaterial("leather", vs, ps, world->GetTexture("leather"), world->GetTexture("velvet_normal"), skyTex, world->GetSamplerState("main"));
@@ -179,7 +211,7 @@ void Game::LoadResources()
 		world->GetBlendState("particle"),
 		world->GetDepthStencilState("particle")
 	);
-	world->CreateMaterial("cockpitHUD", vs, uiPs, world->GetTexture("cockpit"), nullptr, skyTex, world->GetSamplerState("main"));
+	world->CreateMaterial("cockpitHUD", nullptr, nullptr, world->GetTexture("cockpit"), nullptr, skyTex, world->GetSamplerState("main"));
 
 }
 
@@ -297,6 +329,11 @@ void Game::LoadGame()
 	mc->SetSpeed(1.5f); // ** SET SPEED FOR MOVEMENT HERE **
 	mc->SetSensitivity(0.002f); // ** SET SENSITIVITY OF CAMERA HERE **
 	mc->GetWindow(&hWnd, &width, &height); //Get window as a pointer
+	LightComponent* headLight = camera->AddComponent<LightComponent>();
+	headLight->m_data.type = LightComponent::Spot;
+	headLight->m_data.intensity = 10.0f;
+	headLight->m_data.range = 20.0f;
+	headLight->m_data.color = XMFLOAT3(1.0f, 0.0f, 0.0f);
 
 	Launcher* launcher = camera->AddComponent<Launcher>();
 	launcher->SetAmmoMaterial(world->GetMaterial("metal"));
@@ -321,11 +358,11 @@ void Game::LoadGame()
 	ammoVis->AddTag("ammoUI");
 
 	// Light Entities
-	Entity* dirLight = world->Instantiate("DirLight1");
+	/*Entity* dirLight = world->Instantiate("DirLight1");
 	LightComponent* dirLightComp = dirLight->AddComponent<LightComponent>();
 	dirLightComp->m_data.type = LightComponent::Directional;
 	dirLightComp->m_data.color = XMFLOAT3(1.0f, 1.0f, 1.0f);
-	dirLightComp->m_data.intensity = 2.0f;
+	dirLightComp->m_data.intensity = 2.0f;*/
 
 	// UI elements
 	Entity* cockpit = world->Instantiate("Cockpit");
@@ -430,6 +467,14 @@ void Game::Update(float deltaTime, float totalTime)
 		float yaw = mouseMoveX * sensitivity * deltaTime;
 		float pitch = mouseMoveY * sensitivity * deltaTime;
 
+		// Set the motion blur to instensify with camera rotation
+		World::GetInstance()->GetPixelShader("blurPS")->SetFloat("pixelWidth", 1.0f / (float)width);
+		World::GetInstance()->GetPixelShader("blurPS")->SetFloat("pixelHeight", 1.0f / (float)height);
+		World::GetInstance()->GetPixelShader("blurPS")->SetInt("blurAmountX", (int)(yaw * 100.0f) <= 10 ? (int)(yaw * 100.0f) : 10);
+		World::GetInstance()->GetPixelShader("blurPS")->SetInt("blurAmountY", (int)(pitch * 100.0f) <= 10 ? (int)(pitch * 100.0f) : 10);
+
+		World::GetInstance()->GetPixelShader("blurPS")->CopyAllBufferData();
+
 		mouseYaw += yaw;
 		mousePitch += pitch;
 
@@ -479,6 +524,7 @@ void Game::Draw(float deltaTime, float totalTime)
 	//  - Do this ONCE PER FRAME
 	//  - At the beginning of Draw (before drawing *anything*)
 	context->ClearRenderTargetView(backBufferRTV, color);
+	context->ClearRenderTargetView(World::GetInstance()->GetRenderTargetView("blurTarget"), color);
 	context->ClearDepthStencilView(
 		depthStencilView,
 		D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL,
@@ -488,7 +534,7 @@ void Game::Draw(float deltaTime, float totalTime)
 	
 	// Draw each entity
 	SpriteBatch* mainSpriteBatch = World::GetInstance()->GetSpriteBatch("main");
-	World::GetInstance()->DrawEntities(context, mainSpriteBatch, width, height);
+	World::GetInstance()->DrawEntities(context, backBufferRTV, depthStencilView, mainSpriteBatch, width, height);
 
 	
 
