@@ -36,7 +36,7 @@ void EnemyShape::OnCollisionBegin(Entity* other)
 		explosion->AddComponent<EmitterComponent>()->Init("Assets/Particles/Explosion.json", world->GetDevice());
 		explosion->AddComponent<MaterialComponent>()->m_material = world->GetMaterial("particle");
 		SoundComponent* sc = explosion->AddComponent<SoundComponent>();
-		sc->SetSound(world->GetSound("explosion"));
+		sc->SetSound(world->GetSound("hit"));
 		sc->Play();
 		explosion->AddComponent<TimedDestructor>()->SetDuration(2.0f);
 		explosion->GetTransform()->SetPosition(GetOwner()->GetTransform()->GetPosition());

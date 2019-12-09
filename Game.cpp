@@ -184,9 +184,10 @@ void Game::LoadResources()
 	world->CreateMaterial("cockpitHUD", vs, uiPs, world->GetTexture("cockpit"), nullptr, skyTex, world->GetSamplerState("main"));
 
 	// Audio
-	world->CreateSound("explosion", "Assets/Audio/explosion.wav");
-	world->CreateSound("fire", "Assets/Audio/fire.wav");
-	world->CreateSound("hitFail", "Assets/Audio/hitFail.wav");
+	world->CreateSound("hit", "Assets/Audio/hit.wav")->setMode(FMOD_LOOP_OFF);
+	world->CreateSound("fire", "Assets/Audio/fire.wav")->setMode(FMOD_LOOP_OFF);
+	world->CreateSound("hitFail", "Assets/Audio/hitFail.wav")->setMode(FMOD_LOOP_OFF);
+	world->CreateSound("bg", "Assets/Audio/shape-shooter.wav")->setMode(FMOD_LOOP_NORMAL);
 }
 
 
@@ -293,7 +294,6 @@ void Game::LoadGame()
 	World* world = World::GetInstance();
 
 
-
 	Entity* camera = world->Instantiate("Cam");
 	CameraComponent* cc = camera->AddComponent<CameraComponent>();
 	cc->UpdateProjectionMatrix((float)width / height);
@@ -337,6 +337,11 @@ void Game::LoadGame()
 	dirLightComp->m_data.type = LightComponent::Directional;
 	dirLightComp->m_data.color = XMFLOAT3(1.0f, 1.0f, 1.0f);
 	dirLightComp->m_data.intensity = 2.0f;
+
+	Entity* bgMusic = world->Instantiate("BGMusic");
+	SoundComponent* bgSC = bgMusic->AddComponent<SoundComponent>();
+	bgSC->SetSound(world->GetSound("bg"));
+	bgSC->Play();
 
 	// UI elements
 	Entity* cockpit = world->Instantiate("Cockpit");
