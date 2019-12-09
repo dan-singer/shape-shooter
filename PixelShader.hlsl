@@ -82,7 +82,7 @@ float3 microFacet(float D, float3 F, float G, float NdotL, float NdotV)
 	return (D * F * G / (4 * max(NdotV, NdotL)));
 }
 
-float3 DiffuseEnergyConserve(float diffuse, float3 specular)
+float3 DiffuseEnergyConserve(float3 diffuse, float3 specular)
 {
 	return diffuse * ((1 - normalize(specular)) * (1 - metalness));
 }
@@ -121,7 +121,7 @@ float4 pointLight(int index, float4 surfaceColor, float3 normal, float3 toCamera
 
 	float D = SpecDistribution(normal, h);
 	float3 F = Fresnel(toCamera, h, specColor);
-	float G = GeometricShadowing(normal, toCamera, h) * GeometricShadowing(normal, lightDir, h);
+	float G = GeometricShadowing(normal, toCamera, h) * GeometricShadowing(normal, -lightDir, h);
 
 	float3 specular = microFacet(D, F, G, NdotL, NdotV);
 	float3 conservedEnergy = DiffuseEnergyConserve(diffuse, specular);
@@ -141,7 +141,7 @@ float4 spotLight(int index, float4 surfaceColor, float3 normal, float3 toCamera,
 	float NdotV = saturate(dot(toCamera, normal));
 	float4 diffuse = surfaceColor * float4(lights[index].color, 1) * NdotL;
 
-	float angleFromCenter = max(dot(-lightDir, lights[index].direction), 0.0f);
+	float angleFromCenter = max(dot(-lightDir, -lights[index].direction), 0.0f);
 	float spotAmount = pow(angleFromCenter, lights[index].spotFalloff) * lights[index].intensity;
 
 	// Specular
@@ -150,7 +150,7 @@ float4 spotLight(int index, float4 surfaceColor, float3 normal, float3 toCamera,
 
 	float D = SpecDistribution(normal, h);
 	float3 F = Fresnel(toCamera, h, specColor);
-	float G = GeometricShadowing(normal, toCamera, h) * GeometricShadowing(normal, lightDir, h);
+	float G = GeometricShadowing(normal, toCamera, h) * GeometricShadowing(normal, -lightDir, h);
 
 	float3 specular = microFacet(D, F, G, NdotL, NdotV);
 	float3 conservedEnergy = DiffuseEnergyConserve(diffuse, specular);

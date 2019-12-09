@@ -331,9 +331,10 @@ void Game::LoadGame()
 	mc->GetWindow(&hWnd, &width, &height); //Get window as a pointer
 	LightComponent* headLight = camera->AddComponent<LightComponent>();
 	headLight->m_data.type = LightComponent::Spot;
-	headLight->m_data.intensity = 10.0f;
+	headLight->m_data.intensity = 2.0f;
 	headLight->m_data.range = 20.0f;
-	headLight->m_data.color = XMFLOAT3(1.0f, 0.0f, 0.0f);
+	headLight->m_data.spotFalloff = 1.0f;
+	headLight->m_data.color = XMFLOAT3(1.0f, 1.0f, 1.0f);
 
 	Launcher* launcher = camera->AddComponent<Launcher>();
 	launcher->SetAmmoMaterial(world->GetMaterial("metal"));
@@ -346,7 +347,6 @@ void Game::LoadGame()
 
 
 	world->m_mainCamera = cc;
-
 
 	// Ammo Visualizer
 	Entity* ammoVis = world->Instantiate("ammo visualizer");
