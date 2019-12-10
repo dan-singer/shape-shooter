@@ -396,9 +396,9 @@ void Game::LoadGame()
 	score->AddComponent<UITransform>()->Init(
 		Anchor::BOTTOM_CENTER,
 		0.0f,
-		XMFLOAT2(1.0f, 2.5f),
-		XMFLOAT2(1.25f, 1.0f),
-		XMFLOAT2(0.0f, 0.0f)
+		XMFLOAT2(0.5f, 1.0f),
+		XMFLOAT2(1.0f, 1.0f),
+		XMFLOAT2(-10.0f, -80.0f)
 	);
 	score->AddComponent<UITextComponent>()->Init(
 		"0",
