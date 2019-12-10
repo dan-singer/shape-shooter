@@ -5,7 +5,7 @@
 class DebugMovement : public Component
 {
 private:
-	DirectX::XMFLOAT2 prevMousePos;
+	DirectX::XMFLOAT2 prevMousePos = DirectX::XMFLOAT2(0, 0);
 	float m_pitch = 0.0f;
 	float m_yaw = 0.0f;
 public:

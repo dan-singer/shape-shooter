@@ -141,6 +141,8 @@ void Game::LoadResources()
 	// UI Resources
 	world->CreateSpriteBatch("main", context);
 	world->CreateFont("Open Sans", device, L"Assets/Fonts/open-sans.spritefont");
+	world->CreateFont("Roboto", device, L"Assets/Fonts/roboto.spritefont");
+
 
 	// Particles
 	D3D11_DEPTH_STENCIL_DESC particleDsDesc = {};
@@ -244,7 +246,7 @@ void Game::LoadMainMenu()
 	);
 	mainText->AddComponent<UITextComponent>()->Init(
 		"Shape Shooter",
-		world->GetFont("Open Sans"),
+		world->GetFont("Roboto"),
 		Colors::White
 	);
 
@@ -258,7 +260,7 @@ void Game::LoadMainMenu()
 	);
 	startText->AddComponent<UITextComponent>()->Init(
 		"- Start Game -",
-		world->GetFont("Open Sans"),
+		world->GetFont("Roboto"),
 		Colors::Red
 	);
 	startText->AddComponent<ButtonComponent>()->AddOnClick([&]() {
@@ -277,7 +279,7 @@ void Game::LoadMainMenu()
 	);
 	creditsText->AddComponent<UITextComponent>()->Init(
 		"?",
-		world->GetFont("Open Sans"),
+		world->GetFont("Roboto"),
 		Colors::Green
 	);
 	creditsText->AddComponent<ButtonComponent>()->AddOnClick([&]() {
@@ -394,13 +396,13 @@ void Game::LoadGame()
 	score->AddComponent<UITransform>()->Init(
 		Anchor::BOTTOM_CENTER,
 		0.0f,
-		XMFLOAT2(1.0f, 2.5f),
-		XMFLOAT2(1.25f, 1.0f),
-		XMFLOAT2(0.0f, 0.0f)
+		XMFLOAT2(0.5f, 1.0f),
+		XMFLOAT2(1.0f, 1.0f),
+		XMFLOAT2(-10.0f, -80.0f)
 	);
 	score->AddComponent<UITextComponent>()->Init(
 		"0",
-		world->GetFont("Open Sans"),
+		world->GetFont("Roboto"),
 		Colors::White
 	);
 }
@@ -417,7 +419,7 @@ void Game::LoadCredits()
 
 	world->m_mainCamera = cc;
 
-	Entity* mainText = world->Instantiate("Credits Text");
+	Entity* mainText = world->Instantiate("Header");
 	mainText->AddComponent<UITransform>()->Init(
 		Anchor::CENTER_CENTER,
 		0.0f,
@@ -426,8 +428,8 @@ void Game::LoadCredits()
 		XMFLOAT2(0, 0)
 	);
 	mainText->AddComponent<UITextComponent>()->Init(
-		"- Credits -",
-		world->GetFont("Open Sans"),
+		"Shape Shooter was developed with the FT Engine by\nMichael Capra, Michelle Petilli, Dan Singer, and Julian Washington",
+		world->GetFont("Roboto"),
 		Colors::White
 	);
 
@@ -441,7 +443,7 @@ void Game::LoadCredits()
 	);
 	backText->AddComponent<UITextComponent>()->Init(
 		"Back",
-		world->GetFont("Open Sans"),
+		world->GetFont("Roboto"),
 		Colors::White
 	);
 	backText->AddComponent<ButtonComponent>()->AddOnClick([&]() {
