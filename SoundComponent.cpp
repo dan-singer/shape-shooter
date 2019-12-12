@@ -72,5 +72,8 @@ void SoundComponent::Tick(float deltaTime)
 
 SoundComponent::~SoundComponent()
 {
+	if (m_sound) {
+		Stop();
+	}
 	m_channelGroup->release();
 }

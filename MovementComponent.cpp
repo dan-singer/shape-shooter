@@ -13,7 +13,7 @@ void MovementComponent::Tick(float deltaTime)
 {
 	Transform* transform = GetOwner()->GetTransform(); //Grabs current transform of the objec this is one
 
-	//Grab and store our values for movement including the forward vector, right vector, and position
+//Grab and store our values for movement including the forward vector, right vector, and position
 	XMFLOAT3 posData = transform->GetPosition();
 	XMFLOAT3 fwdData = transform->GetForward();
 	XMFLOAT3 rightData = transform->GetRight();

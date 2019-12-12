@@ -5,7 +5,8 @@
 #include <DirectXMath.h>
 #include "TimedDestructor.h"
 #include "UITextComponent.h"
-
+#include "MovementComponent.h"
+#include "Launcher.h"
 using namespace DirectX;
 void EnemyShape::Start()
 {
@@ -16,6 +17,8 @@ void EnemyShape::Start()
 void EnemyShape::Tick(float deltaTime)
 {
 	World* world = World::GetInstance();
+	if (!world->m_mainCamera)
+		return;
 	Entity* player = world->m_mainCamera->GetOwner();
 	// Move towards the player (the camera)
 	XMFLOAT3 posData = GetOwner()->GetTransform()->GetPosition();
@@ -24,10 +27,20 @@ void EnemyShape::Tick(float deltaTime)
 	XMFLOAT3 translationData;
 	XMStoreFloat3(&translationData, translation);
 	GetOwner()->GetTransform()->Translate(translationData);
+
+	// TODO optimize this
+	XMVECTOR distance = XMVector3Length(XMVectorSubtract(XMLoadFloat3(&playerPosData), XMLoadFloat3(&posData)));
+	float distanceData;
+	XMStoreFloat(&distanceData, distance);
+
+	if (distanceData < 1.5f) {
+		OnLose();
+	}
 }
 
 void EnemyShape::OnCollisionBegin(Entity* other)
 {
+
 	if (GetOwner()->GetMesh() == other->GetMesh()) {
 
 		World* world = World::GetInstance();

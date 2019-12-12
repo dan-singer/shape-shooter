@@ -393,7 +393,6 @@ void Game::LoadGame()
 
 	World* world = World::GetInstance();
 
-
 	Entity* camera = world->Instantiate("Cam");
 	CameraComponent* cc = camera->AddComponent<CameraComponent>();
 	cc->UpdateProjectionMatrix((float)width / height);
@@ -402,6 +401,10 @@ void Game::LoadGame()
 	mc->SetSpeed(1.5f); // ** SET SPEED FOR MOVEMENT HERE **
 	mc->SetSensitivity(0.002f); // ** SET SENSITIVITY OF CAMERA HERE **
 	mc->GetWindow(&hWnd, &width, &height); //Get window as a pointer
+	RigidBodyComponent* rbc = camera->AddComponent<RigidBodyComponent>();
+	rbc->SetSphereCollider(1.0f);
+	camera->AddTag("player");
+
 	LightComponent* headLight = camera->AddComponent<LightComponent>();
 	headLight->m_data.type = LightComponent::Spot;
 	headLight->m_data.intensity = 2.0f;
@@ -424,6 +427,12 @@ void Game::LoadGame()
 	Entity* ShapeSpawnManager = world->Instantiate("ShapeSpawnManager");
 	ShapeSpawnerManagerComponent* ss = ShapeSpawnManager->AddComponent<ShapeSpawnerManagerComponent>();
 	ShapeSpawnManager->AddComponent<SoundComponent>();
+
+	ss->OnLose = [&]() {
+		World* world = World::GetInstance();
+		world->DestroyAllEntities();
+		LoadGameOver();
+	};
 
 	world->m_mainCamera = cc;
 
@@ -520,6 +529,56 @@ void Game::LoadCredits()
 
 }
 
+void Game::LoadGameOver()
+{
+	ShowCursor(true);
+	allowCameraRotation = false;
+	//Do game over things here
+	World* world = World::GetInstance();
+	Entity* camera = world->Instantiate("Cam");
+	CameraComponent* cc = camera->AddComponent<CameraComponent>();
+	cc->UpdateProjectionMatrix((float)width / height);
+	camera->GetTransform()->SetPosition(XMFLOAT3(0, 0, -10));
+
+	world->m_mainCamera = cc;
+	
+
+	Entity* mainText = world->Instantiate("Game Over Text");
+	mainText->AddComponent<UITransform>()->Init(
+		Anchor::CENTER_CENTER,
+		0.0f,
+		XMFLOAT2(0.5f, 0.5f),
+		XMFLOAT2(1, 1),
+		XMFLOAT2(0, 0)
+	);
+	mainText->AddComponent<UITextComponent>()->Init(
+		"Game Over!",
+		world->GetFont("Open Sans"),
+		Colors::White
+	);
+
+	Entity* restartButton = world->Instantiate("RestartButton");
+	restartButton->AddComponent<UITransform>()->Init(Anchor::BOTTOM_CENTER,
+		0.0f,
+		XMFLOAT2(.5f, 0),
+		XMFLOAT2(.75f, .75f),
+		XMFLOAT2(0, -50.0f)
+	);
+
+	restartButton->AddComponent<UITextComponent>()->Init(
+		"Play Again?",
+		world->GetFont("Open Sans"),
+		Colors::White
+	);
+
+	restartButton->AddComponent<ButtonComponent>()->AddOnClick([&]() {
+
+		World* world = World::GetInstance();
+		world->DestroyAllEntities();
+		LoadGame();
+	});
+}
+
 // --------------------------------------------------------
 // Handle resizing DirectX "stuff" to match the new window size.
 // For instance, updating our projection matrix's aspect ratio.
@@ -536,7 +595,7 @@ void Game::OnResize()
 // --------------------------------------------------------
 void Game::Update(float deltaTime, float totalTime)
 {
-	if (allowCameraRotation) {
+	if (allowCameraRotation && World::GetInstance()->m_mainCamera) {
 		//MOUSE MOVEMENT
 		// Get current position
 		POINT cursorPos = {};
