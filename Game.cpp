@@ -104,8 +104,11 @@ void Game::LoadResources()
 	SimpleVertexShader* particleVs = world->CreateVertexShader("particle", device, context, L"ParticleVS.cso");
 	SimplePixelShader* particlePs = world->CreatePixelShader("particle", device, context, L"ParticlePS.cso");
 	// Motion Blur shaders
-	world->CreateVertexShader("blurVS", device, context, L"BlurVS.cso");
+	world->CreateVertexShader("ppVS", device, context, L"PostProcessVS.cso");
 	world->CreatePixelShader("blurPS", device, context, L"BlurPS.cso");
+	// Bloom shaders
+	world->CreatePixelShader("bloomPS", device, context, L"BloomPS.cso");
+	world->CreatePixelShader("postBloomPS", device, context, L"PostBloomPS.cso");
 
 	// Textures
 	world->CreateTexture("leather", device, context, L"Assets/Textures/Leather.jpg");
@@ -165,35 +168,98 @@ void Game::LoadResources()
 	world->CreateBlendState("particle", &particleBlendDesc, device);
 
 	// Post-processes
-	ID3D11Texture2D* ppTexture;
-	D3D11_TEXTURE2D_DESC textureDesc = {};
-	textureDesc.Width = width;
-	textureDesc.Height = height;
-	textureDesc.ArraySize = 1;
-	textureDesc.BindFlags = D3D10_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
-	textureDesc.CPUAccessFlags = 0;
-	textureDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-	textureDesc.MipLevels = 1;
-	textureDesc.MiscFlags = 0;
-	textureDesc.SampleDesc.Count = 1;
-	textureDesc.SampleDesc.Quality = 0;
-	textureDesc.Usage = D3D11_USAGE_DEFAULT;
-	device->CreateTexture2D(&textureDesc, 0, &ppTexture);
+	// blur
+	ID3D11Texture2D* blurTexture;
+	D3D11_TEXTURE2D_DESC blurDesc = {};
+	blurDesc.Width = width;
+	blurDesc.Height = height;
+	blurDesc.ArraySize = 1;
+	blurDesc.BindFlags = D3D10_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
+	blurDesc.CPUAccessFlags = 0;
+	blurDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	blurDesc.MipLevels = 1;
+	blurDesc.MiscFlags = 0;
+	blurDesc.SampleDesc.Count = 1;
+	blurDesc.SampleDesc.Quality = 0;
+	blurDesc.Usage = D3D11_USAGE_DEFAULT;
+	device->CreateTexture2D(&blurDesc, 0, &blurTexture);
 
-	D3D11_RENDER_TARGET_VIEW_DESC rtvDesc = {};
-	rtvDesc.Format = textureDesc.Format;
-	rtvDesc.Texture2D.MipSlice = 0;
-	rtvDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
-	world->CreateRenderTargetView("blurTarget", device, ppTexture, &rtvDesc);
+	D3D11_RENDER_TARGET_VIEW_DESC blurRtvDesc = {};
+	blurRtvDesc.Format = blurDesc.Format;
+	blurRtvDesc.Texture2D.MipSlice = 0;
+	blurRtvDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
+	world->CreateRenderTargetView("blurTarget", device, blurTexture, &blurRtvDesc);
 
-	D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
-	srvDesc.Format = textureDesc.Format;
-	srvDesc.Texture2D.MipLevels = 1;
-	srvDesc.Texture2D.MostDetailedMip = 0;
-	srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
-	world->CreateTexture("blurSRV", device, ppTexture, &srvDesc);
+	D3D11_SHADER_RESOURCE_VIEW_DESC blurSrvDesc = {};
+	blurSrvDesc.Format = blurDesc.Format;
+	blurSrvDesc.Texture2D.MipLevels = 1;
+	blurSrvDesc.Texture2D.MostDetailedMip = 0;
+	blurSrvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+	world->CreateTexture("blurSRV", device, blurTexture, &blurSrvDesc);
 
-	ppTexture->Release();
+	blurTexture->Release();
+
+	// bright samples
+	ID3D11Texture2D* brightSampleTexture;
+	D3D11_TEXTURE2D_DESC brightSampleDesc = {};
+	brightSampleDesc.Width = width;
+	brightSampleDesc.Height = height;
+	brightSampleDesc.ArraySize = 1;
+	brightSampleDesc.BindFlags = D3D10_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
+	brightSampleDesc.CPUAccessFlags = 0;
+	brightSampleDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	brightSampleDesc.MipLevels = 1;
+	brightSampleDesc.MiscFlags = 0;
+	brightSampleDesc.SampleDesc.Count = 1;
+	brightSampleDesc.SampleDesc.Quality = 0;
+	brightSampleDesc.Usage = D3D11_USAGE_DEFAULT;
+	device->CreateTexture2D(&brightSampleDesc, 0, &brightSampleTexture);
+
+	D3D11_RENDER_TARGET_VIEW_DESC brightSampleRtvDesc = {};
+	brightSampleRtvDesc.Format = brightSampleDesc.Format;
+	brightSampleRtvDesc.Texture2D.MipSlice = 0;
+	brightSampleRtvDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
+	world->CreateRenderTargetView("brightSampleTarget", device, brightSampleTexture, &brightSampleRtvDesc);
+
+	D3D11_SHADER_RESOURCE_VIEW_DESC brightSampleSrvDesc = {};
+	brightSampleSrvDesc.Format = brightSampleDesc.Format;
+	brightSampleSrvDesc.Texture2D.MipLevels = 1;
+	brightSampleSrvDesc.Texture2D.MostDetailedMip = 0;
+	brightSampleSrvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+	world->CreateTexture("brightSampleSRV", device, brightSampleTexture, &brightSampleSrvDesc);
+
+	brightSampleTexture->Release();
+
+	// post bloom
+	ID3D11Texture2D* postBloomTexture;
+	D3D11_TEXTURE2D_DESC postBloomDesc = {};
+	postBloomDesc.Width = width;
+	postBloomDesc.Height = height;
+	postBloomDesc.ArraySize = 1;
+	postBloomDesc.BindFlags = D3D10_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
+	postBloomDesc.CPUAccessFlags = 0;
+	postBloomDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	postBloomDesc.MipLevels = 1;
+	postBloomDesc.MiscFlags = 0;
+	postBloomDesc.SampleDesc.Count = 1;
+	postBloomDesc.SampleDesc.Quality = 0;
+	postBloomDesc.Usage = D3D11_USAGE_DEFAULT;
+	device->CreateTexture2D(&postBloomDesc, 0, &postBloomTexture);
+
+	D3D11_RENDER_TARGET_VIEW_DESC postBloomRtvDesc = {};
+	postBloomRtvDesc.Format = postBloomDesc.Format;
+	postBloomRtvDesc.Texture2D.MipSlice = 0;
+	postBloomRtvDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
+	world->CreateRenderTargetView("postBloomTarget", device, postBloomTexture, &postBloomRtvDesc);
+
+	D3D11_SHADER_RESOURCE_VIEW_DESC postBloomSrvDesc = {};
+	postBloomSrvDesc.Format = postBloomDesc.Format;
+	postBloomSrvDesc.Texture2D.MipLevels = 1;
+	postBloomSrvDesc.Texture2D.MostDetailedMip = 0;
+	postBloomSrvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+	world->CreateTexture("postBloomSRV", device, postBloomTexture, &postBloomSrvDesc);
+
+	postBloomTexture->Release();
 
 	// Materials
 	world->CreateMaterial("leather", vs, ps, world->GetTexture("leather"), world->GetTexture("velvet_normal"), skyTex, world->GetSamplerState("main"));

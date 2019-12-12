@@ -3,8 +3,7 @@ cbuffer Data : register(b0)
 {
 	float pixelWidth;
 	float pixelHeight;
-	int blurAmountX;
-	int blurAmountY;
+	int blurAmount;
 }
 
 
@@ -17,26 +16,28 @@ struct VertexToPixel
 };
 
 // Textures and such
-Texture2D Pixels		: register(t0);
-SamplerState Sampler	: register(s0);
+Texture2D originalRender	: register(t0);
+Texture2D brightSamples		: register(t1);
+SamplerState Sampler		: register(s0);
 
 
-// Entry point for this pixel shader
 float4 main(VertexToPixel input) : SV_TARGET
 {
+	// Blur the bright sample render
 	float4 totalColor = float4(0,0,0,0);
 	uint numSamples = 0;
 
-	for (int y = -blurAmountY; y <= blurAmountY; y++)
+	for (int y = -blurAmount; y <= blurAmount; y++)
 	{
-		for (int x = -blurAmountX; x <= blurAmountX; x++)
+		for (int x = -blurAmount; x <= blurAmount; x++)
 		{
 			float2 uv = input.uv + float2(x * pixelWidth, y * pixelHeight);
-			totalColor += Pixels.Sample(Sampler, uv);
+			totalColor += brightSamples.Sample(Sampler, uv);
 
 			numSamples++;
 		}
 	}
 
-	return totalColor / numSamples;
+	// Combine the original render with the blurred sample
+	return (totalColor / numSamples) + originalRender.Sample(Sampler, input.uv);
 }

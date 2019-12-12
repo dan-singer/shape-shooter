@@ -229,7 +229,14 @@
     <FxCompile Include="BlurPS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="BlurVS.hlsl">
+    <FxCompile Include="psSkyBox.hlsl" />
+    <FxCompile Include="PostProcessVS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="BloomPS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="PostBloomPS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
   </ItemGroup>

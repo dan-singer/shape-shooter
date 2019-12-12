@@ -17,6 +17,11 @@ struct VertexToPixel
 	float3 worldPos		: POSITION;
 };
 
+cbuffer externalData : register(b0)
+{
+	float3 cameraPos;
+};
+
 Texture2D diffuseTexture : register(t0);
 SamplerState samplerState : register(s0);
 
@@ -32,5 +37,9 @@ SamplerState samplerState : register(s0);
 // --------------------------------------------------------
 float4 main(VertexToPixel input) : SV_TARGET
 {
-	return diffuseTexture.Sample(samplerState, input.uv);
+	input.normal = normalize(input.normal);
+	float3 toLight = normalize(cameraPos + float3(-1.0f, 1.0f, 1.0f));
+	float NdotL = saturate(dot(toLight, input.normal));
+	
+	return float4(diffuseTexture.Sample(samplerState, input.uv).xyz * float3(1.0f, 1.0f, 1.0f) * NdotL, 1.0f);
 }
