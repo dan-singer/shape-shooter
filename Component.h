@@ -1,7 +1,7 @@
 #pragma once
 class Entity;
 #include <Windows.h>
-
+#include <bullet/btBulletDynamicsCommon.h>
 
 // --------------------------------------------------------
 // Abstract Component class which encapsulates state and 
@@ -11,6 +11,7 @@ class Component
 {
 private:
 	Entity* m_owner = nullptr;
+	bool m_enabled = true;
 public:
 	// --------------------------------------------------------
 	// Component Constructor. Do not change the parameters that 
@@ -40,11 +41,25 @@ public:
 	virtual void OnResize(int width, int height) { }
 	///////////////////////////////////////////////////////////////
 	
+	// Collision Methods //////////////////////////////////////////
+	virtual void OnCollisionBegin(Entity* other) { }
+	virtual void OnCollisionStay(Entity* other) { }
+	virtual void OnCollisionEnd(Entity* other) { }
+	///////////////////////////////////////////////////////////////
+
+	
 	// --------------------------------------------------------
 	// Returns the owner of this Component
 	// @returns Entity*
 	// --------------------------------------------------------
 	Entity* GetOwner() { return m_owner; }
+
+	// --------------------------------------------------------
+	// Returns whether this component is enabled. 
+	// Disabled components will not be updated or started.
+	// --------------------------------------------------------
+	bool GetEnabled() { return m_enabled; }
+	void SetEnabled(bool enabled) { m_enabled = enabled; }
 
 	virtual ~Component();
 };

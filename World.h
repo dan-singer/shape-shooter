@@ -5,10 +5,17 @@
 #include <Windows.h>
 #include <d3d11.h>
 #include <map>
+#include <bullet/btBulletDynamicsCommon.h>
 #include "LightComponent.h"
 #include "Mesh.h"
 #include "SimpleShader.h"
 #include "Material.h"
+#include <set>
+#include <queue>
+#include <SpriteBatch.h>
+#include <SpriteFont.h>
+#include <CommonStates.h>
+#include <fmod/fmod.hpp>
 class CameraComponent;
 class Entity;
 
@@ -27,15 +34,44 @@ private:
 	std::map<std::string, SimplePixelShader*> m_pixelShaders;
 	std::map<std::string, Material*> m_materials;
 	std::map<std::string, ID3D11ShaderResourceView*> m_SRVs;
+	std::map<std::string, ID3D11RenderTargetView*> m_RTVs;
+	std::map<std::string, ID3D11ShaderResourceView*>m_cubeSRVs;
 	std::map<std::string, ID3D11SamplerState*> m_samplerStates;
+	std::map<std::string, ID3D11RasterizerState*> m_rastStates;
+	std::map<std::string, ID3D11DepthStencilState*> m_depthStencilStates;
+	std::map<std::string, ID3D11BlendState*> m_blendStates;
+	std::map<std::string, DirectX::SpriteBatch*> m_spriteBatches;
+	std::map<std::string, DirectX::SpriteFont*> m_fonts;
+	std::map<std::string, FMOD::Sound*> m_sounds;
+	std::queue<Entity*> m_spawnQueue;
+	std::queue<Entity*> m_destroyQueue;
 	LightComponent::Light m_lights[MAX_LIGHTS];
 	int m_activeLightCount = 0;
+	ID3D11Device* m_device = nullptr;
+	FMOD::System* m_soundSystem = nullptr;
+
+	// Bullet
+	btDefaultCollisionConfiguration* m_collisionConfiguration;
+	btCollisionDispatcher* m_dispatcher;
+	btBroadphaseInterface* m_overlappingPairCache;
+	btSequentialImpulseConstraintSolver* m_solver;
+	btDiscreteDynamicsWorld* m_dynamicsWorld;
+	btVector3 m_gravity = btVector3(0, 0, 0);
+	std::map<const btCollisionObject*, std::set<const btCollisionObject*>> m_collisionMap;
+
+	DirectX::CommonStates* m_states;
+
 	World();
 	// --------------------------------------------------------
 	// Rebuilds the array of light structs that will be sent to the GPU.
 	// --------------------------------------------------------
 	void RebuildLights();
 
+	// --------------------------------------------------------
+	// Spawns entities in the spawn queue and destroys those 
+	// in the destroy queue
+	// --------------------------------------------------------
+	void Flush();
 public:
 	CameraComponent* m_mainCamera = nullptr;
 
@@ -46,9 +82,27 @@ public:
 
 
 	// --------------------------------------------------------
-	// Create an Entity in the world.
+	// Returns a pointer to the Bullet library's world object
+	// --------------------------------------------------------
+	btDiscreteDynamicsWorld* GetPhysicsWorld() { return m_dynamicsWorld; }
+
+	void SetGravity(btVector3 gravity);
+
+	void SetDevice(ID3D11Device* device) 
+	{ 
+		m_device = device;
+		m_states = new DirectX::CommonStates(device);
+	}
+	ID3D11Device* GetDevice() { return m_device; }
+
+	FMOD::System* GetSoundSystem() { return m_soundSystem; }
+
+	// --------------------------------------------------------
+	// Create an Entity in the world. 
+	// Note: you'll have to manually call Start on all of the components
+	// After Instantiating an Entity.
 	// @param const std::string& name name of the entity
- 	// @returns Entity* the created Entity pointer
+	// @returns Entity* the created Entity pointer
 	// --------------------------------------------------------
 	Entity* Instantiate(const std::string& name);
 
@@ -68,6 +122,11 @@ public:
 	// Destroys an Entity. It will not be rendered after this.
 	// --------------------------------------------------------
 	void Destroy(Entity* entity);
+
+	// --------------------------------------------------------
+	// Destroys all entities that have been instantiated
+	// --------------------------------------------------------
+	void DestroyAllEntities();
 
 	// --------------------------------------------------------
 	// Creates a mesh and adds it to the internal Mesh map
@@ -92,35 +151,86 @@ public:
 	// Creates a Material and adds it to the internal Materials map
 	// --------------------------------------------------------
 	Material* CreateMaterial(const std::string& name, SimpleVertexShader* vertexShader, SimplePixelShader* pixelShader,
-		ID3D11ShaderResourceView* shaderResourceView, ID3D11SamplerState* samplerState);
+		ID3D11ShaderResourceView* diffuseSRV, ID3D11ShaderResourceView* normalSRV, ID3D11ShaderResourceView* reflectionSRV,
+		ID3D11SamplerState* samplerState, ID3D11BlendState* blendState = nullptr, ID3D11DepthStencilState* depthStencilState = nullptr);
 	Material* GetMaterial(const std::string& name);
 
 	// --------------------------------------------------------
 	// Creates a shader resource view and returns it
 	// --------------------------------------------------------
 	ID3D11ShaderResourceView* CreateTexture(const std::string& name, ID3D11Device* device, ID3D11DeviceContext* context, const wchar_t* fileName);
+	ID3D11ShaderResourceView* CreateTexture(const std::string& name, ID3D11Device* device, ID3D11Texture2D* textureResource, const D3D11_SHADER_RESOURCE_VIEW_DESC* desc);
 	ID3D11ShaderResourceView* GetTexture(const std::string& name);
+
+	// --------------------------------------------------------
+	// Creates a cube texture shader resource view and returns it
+	// --------------------------------------------------------
+	ID3D11ShaderResourceView* CreateCubeTexture(const std::string& name, ID3D11Device* device, ID3D11DeviceContext* context, const wchar_t* fileName);
+	ID3D11ShaderResourceView* GetCubeTexture(const std::string& name);
+
+	// --------------------------------------------------------
+	// Creates a render target view and returns it
+	// --------------------------------------------------------
+	ID3D11RenderTargetView* CreateRenderTargetView(const std::string& name, ID3D11Device* device, ID3D11Texture2D* textureResource, const D3D11_RENDER_TARGET_VIEW_DESC* desc);
+	ID3D11RenderTargetView* GetRenderTargetView(const std::string& name);
 
 	// --------------------------------------------------------
 	// Create a sampler state and store it in the internal map
 	// --------------------------------------------------------
 	ID3D11SamplerState* CreateSamplerState(const std::string& name, D3D11_SAMPLER_DESC* description, ID3D11Device* device);
 	ID3D11SamplerState* GetSamplerState(const std::string& name);
+
+	// --------------------------------------------------------
+	// Create a rasterizer state and stores it in the internal map
+	// --------------------------------------------------------
+	ID3D11RasterizerState* CreateRasterizerState(const std::string& name, D3D11_RASTERIZER_DESC* description, ID3D11Device* device);
+	ID3D11RasterizerState* GetRasterizerState(const std::string& name);
+
+	// --------------------------------------------------------
+	// Create a depth stencil state and store it in the internal map
+	// --------------------------------------------------------
+	ID3D11DepthStencilState* CreateDepthStencilState(const std::string& name, D3D11_DEPTH_STENCIL_DESC* description, ID3D11Device* device);
+	ID3D11DepthStencilState* GetDepthStencilState(const std::string& name);
+
+	// --------------------------------------------------------
+	// Create a blend state and store it in the internal map
+	// --------------------------------------------------------
+	ID3D11BlendState* CreateBlendState(const std::string& name, D3D11_BLEND_DESC* description, ID3D11Device* device);
+	ID3D11BlendState* GetBlendState(const std::string& name);
+
+	// --------------------------------------------------------
+	// Create a SpriteBatch and store it in the internal map
+	// --------------------------------------------------------
+	DirectX::SpriteBatch* CreateSpriteBatch(const std::string& name, ID3D11DeviceContext* context);
+	DirectX::SpriteBatch* GetSpriteBatch(const std::string& name);
+
+
+	// --------------------------------------------------------
+	// Create a SpriteFont and store it in the internal map
+	// --------------------------------------------------------
+	DirectX::SpriteFont* CreateFont(const std::string& name, ID3D11Device* device, const wchar_t* path);
+	DirectX::SpriteFont* GetFont(const std::string& name);
+
+	// --------------------------------------------------------
+	// Create a Sound resource and store it in the internal map
+	// --------------------------------------------------------
+	FMOD::Sound* CreateSound(const std::string& name, const char* path);
+	FMOD::Sound* GetSound(const std::string& name);
+
+
 	// Lifecycle methods for Entities
 	void OnMouseDown(WPARAM buttonState, int x, int y);
 	void OnMouseUp(WPARAM buttonState, int x, int y);
 	void OnMouseMove(WPARAM buttonState, int x, int y);
 	void OnMouseWheel(float wheelDelta, int x, int y);
 	void OnResize(int width, int height);
-	void Start();
 	void Tick(float deltaTime);
 
 
 	// --------------------------------------------------------
 	// Draws all entities using the device context
 	// --------------------------------------------------------
-	void DrawEntities(ID3D11DeviceContext* context);
+	void DrawEntities(ID3D11DeviceContext* context, ID3D11RenderTargetView* backBufferRTV, ID3D11DepthStencilView* depthStencilView, DirectX::SpriteBatch* spriteBatch, int screenWidth, int screenHeight);
 
 	~World();
 };
-

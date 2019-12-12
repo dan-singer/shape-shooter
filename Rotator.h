@@ -4,7 +4,7 @@
 class Rotator : public Component
 {
 public:
-	DirectX::XMFLOAT3 eulerDelta;
+	DirectX::XMFLOAT3 eulerDelta = DirectX::XMFLOAT3(0, 0, 0);
 
 	Rotator(Entity* entity) : Component(entity) { }
 
