@@ -637,15 +637,16 @@ void World::DrawEntities(ID3D11DeviceContext* context, ID3D11RenderTargetView* b
 		context->RSSetState(0);
 	}
 
-	// Complete motion blur render
-	context->OMSetRenderTargets(1, &backBufferRTV, 0);
+	// Complete motion blur render and begin bright sample render
+	context->OMSetRenderTargets(1, &m_RTVs["brightSampleTarget"], 0);
 
-	SimpleVertexShader* blurVS = m_vertexShaders["blurVS"];
-	blurVS->SetShader();
+	SimpleVertexShader* ppVS = m_vertexShaders["ppVS"];
+	ppVS->SetShader();
 
 	SimplePixelShader* blurPS = m_pixelShaders["blurPS"];
 	blurPS->SetShaderResourceView("Pixels", m_SRVs["blurSRV"]);
 	blurPS->SetSamplerState("Sampler", m_samplerStates["main"]);
+	blurPS->CopyAllBufferData();
 	blurPS->SetShader();
 
 	ID3D11Buffer* nothing = 0;
@@ -655,6 +656,49 @@ void World::DrawEntities(ID3D11DeviceContext* context, ID3D11RenderTargetView* b
 	context->Draw(3, 0);
 
 	ID3D11ShaderResourceView* nullSRVs[16] = {};
+	context->PSSetShaderResources(0, 16, nullSRVs);
+
+	// Complete bright sample render and begin post bloom render
+	context->OMSetRenderTargets(1, &m_RTVs["postBloomTarget"], 0);
+
+	ppVS->SetShader();
+
+	SimplePixelShader* brightSamplePS = m_pixelShaders["bloomPS"];
+	brightSamplePS->SetShaderResourceView("Pixels", m_SRVs["brightSampleSRV"]);
+	brightSamplePS->SetSamplerState("Sampler", m_samplerStates["main"]);
+	brightSamplePS->CopyAllBufferData();
+	brightSamplePS->SetShader();
+
+	nothing = 0;
+	context->IASetIndexBuffer(0, DXGI_FORMAT_R32_UINT, 0);
+	context->IASetVertexBuffers(0, 1, &nothing, &stride, &offset);
+
+	context->Draw(3, 0);
+
+	context->PSSetShaderResources(0, 16, nullSRVs);
+
+	// Complete post bloom render
+	context->OMSetRenderTargets(1, &backBufferRTV, 0);
+
+	ppVS->SetShader();
+
+	SimplePixelShader* postBloomPS = m_pixelShaders["postBloomPS"];
+	postBloomPS->SetShaderResourceView("brightSamples", m_SRVs["postBloomSRV"]);
+	postBloomPS->SetShaderResourceView("originalRender", m_SRVs["brightSampleSRV"]);
+	postBloomPS->SetSamplerState("Sampler", m_samplerStates["main"]);
+
+	postBloomPS->SetFloat("pixelWidth", 1.0f / (float)screenWidth);
+	postBloomPS->SetFloat("pixelHeight", 1.0f / (float)screenHeight);
+	postBloomPS->SetInt("blurAmount", 7);
+	postBloomPS->CopyAllBufferData();
+	postBloomPS->SetShader();
+
+	nothing = 0;
+	context->IASetIndexBuffer(0, DXGI_FORMAT_R32_UINT, 0);
+	context->IASetVertexBuffers(0, 1, &nothing, &stride, &offset);
+
+	context->Draw(3, 0);
+
 	context->PSSetShaderResources(0, 16, nullSRVs);
 
 	spriteBatch->Begin(SpriteSortMode_Deferred, m_states->NonPremultiplied());
@@ -725,6 +769,7 @@ void World::DrawEntities(ID3D11DeviceContext* context, ID3D11RenderTargetView* b
 
 	if(ammoUI && ammoUI->GetMaterial() && ammoUI->GetMesh())
 	{
+		context->OMSetRenderTargets(1, &backBufferRTV, depthStencilView);
 		ammoUI->PrepareMaterial(
 			m_mainCamera->GetViewMatrix(), m_mainCamera->GetProjectionMatrix(),
 			m_mainCamera->GetOwner()->GetTransform()->GetPosition(),
