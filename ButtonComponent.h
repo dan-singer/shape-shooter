@@ -16,7 +16,7 @@ private:
 
 	bool m_wasInBounds = false;
 
-	DirectX::XMFLOAT2 m_mousePos;
+	DirectX::XMFLOAT2 m_mousePos = DirectX::XMFLOAT2(0, 0);
 
 	bool MouseInBounds();
 

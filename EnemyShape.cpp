@@ -11,6 +11,7 @@ using namespace DirectX;
 void EnemyShape::Start()
 {
 	m_scoreText = World::GetInstance()->Find("Score")->GetComponent<UITextComponent>();
+	m_soundComponent = GetOwner()->GetComponent<SoundComponent>();
 }
 
 void EnemyShape::Tick(float deltaTime)
@@ -47,6 +48,9 @@ void EnemyShape::OnCollisionBegin(Entity* other)
 		Entity* explosion = world->Instantiate("explosion");
 		explosion->AddComponent<EmitterComponent>()->Init("Assets/Particles/Explosion.json", world->GetDevice());
 		explosion->AddComponent<MaterialComponent>()->m_material = world->GetMaterial("particle");
+		SoundComponent* sc = explosion->AddComponent<SoundComponent>();
+		sc->SetSound(world->GetSound("hit"));
+		sc->Play();
 		explosion->AddComponent<TimedDestructor>()->SetDuration(2.0f);
 		explosion->GetTransform()->SetPosition(GetOwner()->GetTransform()->GetPosition());
 
@@ -57,6 +61,8 @@ void EnemyShape::OnCollisionBegin(Entity* other)
 		World::GetInstance()->Destroy(other);
 		World::GetInstance()->Destroy(GetOwner());
 	}
-
+	else {
+		m_soundComponent->Play();
+	}
 }
 

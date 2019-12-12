@@ -29,6 +29,10 @@ World::World()
 	m_dynamicsWorld = new btDiscreteDynamicsWorld(m_dispatcher, m_overlappingPairCache, m_solver, m_collisionConfiguration);
 
 	m_dynamicsWorld->setGravity(m_gravity);
+
+	// FMOD sound setup
+	FMOD::System_Create(&m_soundSystem);
+	m_soundSystem->init(36, FMOD_INIT_NORMAL, nullptr);
 }
 
 World* World::GetInstance()
@@ -216,6 +220,13 @@ ID3D11ShaderResourceView* World::CreateTexture(const std::string& name, ID3D11De
 	return m_SRVs[name];
 }
 
+ID3D11ShaderResourceView* World::CreateTexture(const std::string& name, ID3D11Device* device, ID3D11Texture2D* textureResource, const D3D11_SHADER_RESOURCE_VIEW_DESC* desc)
+{
+	m_SRVs[name] = nullptr;
+	device->CreateShaderResourceView(textureResource, desc, &m_SRVs[name]);
+	return m_SRVs[name];
+}
+
 ID3D11ShaderResourceView* World::GetTexture(const std::string& name)
 {
 	return m_SRVs[name];
@@ -230,6 +241,18 @@ ID3D11ShaderResourceView* World::CreateCubeTexture(const std::string& name, ID3D
 ID3D11ShaderResourceView* World::GetCubeTexture(const std::string& name)
 {
 	return m_cubeSRVs[name];
+}
+
+ID3D11RenderTargetView* World::CreateRenderTargetView(const std::string& name, ID3D11Device* device, ID3D11Texture2D* textureResource, const D3D11_RENDER_TARGET_VIEW_DESC* desc)
+{
+	m_RTVs[name] = nullptr;
+	device->CreateRenderTargetView(textureResource, desc, &m_RTVs[name]);
+	return m_RTVs[name];
+}
+
+ID3D11RenderTargetView* World::GetRenderTargetView(const std::string& name)
+{
+	return m_RTVs[name];
 }
 
 ID3D11SamplerState* World::CreateSamplerState(const std::string& name, D3D11_SAMPLER_DESC* description, ID3D11Device* device)
@@ -304,11 +327,26 @@ DirectX::SpriteFont* World::GetFont(const std::string& name)
 	return m_fonts[name];
 }
 
+FMOD::Sound* World::CreateSound(const std::string& name, const char* path)
+{
+	FMOD::Sound* newSound;
+	m_soundSystem->createSound(path, FMOD_DEFAULT, 0, &newSound);
+	m_sounds[name] = newSound;
+	return newSound;
+}
+
+FMOD::Sound* World::GetSound(const std::string& name)
+{
+	return m_sounds[name];
+}
+
 void World::OnMouseDown(WPARAM buttonState, int x, int y)
 {
 	for (Entity* entity : m_entities) {
 		for (Component* component : entity->GetAllComponents()) {
-			component->OnMouseDown(buttonState, x, y);
+			if (component->GetEnabled()) {
+				component->OnMouseDown(buttonState, x, y);
+			}
 		}
 	}
 }
@@ -317,7 +355,9 @@ void World::OnMouseUp(WPARAM buttonState, int x, int y)
 {
 	for (Entity* entity : m_entities) {
 		for (Component* component : entity->GetAllComponents()) {
-			component->OnMouseUp(buttonState, x, y);
+			if (component->GetEnabled()) {
+				component->OnMouseUp(buttonState, x, y);
+			}
 		}
 	}
 }
@@ -326,7 +366,9 @@ void World::OnMouseMove(WPARAM buttonState, int x, int y)
 {
 	for (Entity* entity : m_entities) {
 		for (Component* component : entity->GetAllComponents()) {
-			component->OnMouseMove(buttonState, x, y);
+			if (component->GetEnabled()) {
+				component->OnMouseMove(buttonState, x, y);
+			}
 		}
 	}
 }
@@ -335,7 +377,9 @@ void World::OnMouseWheel(float wheelDelta, int x, int y)
 {
 	for (Entity* entity : m_entities) {
 		for (Component* component : entity->GetAllComponents()) {
-			component->OnMouseWheel(wheelDelta, x, y);
+			if (component->GetEnabled()) {
+				component->OnMouseWheel(wheelDelta, x, y);
+			}
 		}
 	}
 }
@@ -344,7 +388,9 @@ void World::OnResize(int width, int height)
 {
 	for (Entity* entity : m_entities) {
 		for (Component* component : entity->GetAllComponents()) {
-			component->OnResize(width, height);
+			if (component->GetEnabled()) {
+				component->OnResize(width, height);
+			}
 		}
 	}
 }
@@ -372,29 +418,41 @@ void World::Tick(float deltaTime)
 		if (m_collisionMap.count(body0) == 0) {
 			m_collisionMap[body0] = std::set<const btCollisionObject*>();
 			for (Component* component : e0->GetAllComponents()) {
-				component->OnCollisionBegin(e1);
+				if (component->GetEnabled()) {
+					component->OnCollisionBegin(e1);
+				}
 			}
 			for (Component* component : e1->GetAllComponents()) {
-				component->OnCollisionBegin(e0);
+				if (component->GetEnabled()) {
+					component->OnCollisionBegin(e0);
+				}
 			}
 		}
 		else if (m_collisionMap[body0].count(body1) == 0) {
 			m_collisionMap[body0].insert(body1);
 			for (Component* component : e0->GetAllComponents()) {
-				component->OnCollisionBegin(e1);
+				if (component->GetEnabled()) {
+					component->OnCollisionBegin(e1);
+				}
 			}
 			for (Component* component : e1->GetAllComponents()) {
-				component->OnCollisionBegin(e0);
+				if (component->GetEnabled()) {
+					component->OnCollisionBegin(e0);
+				}
 			}
 		}
 		// Recurring collision callback
 		else {
 			// Collision callback triggered each frame of the collision
 			for (Component* component : e0->GetAllComponents()) {
-				component->OnCollisionStay(e1);
+				if (component->GetEnabled()) {
+					component->OnCollisionStay(e1);
+				}
 			}
 			for (Component* component : e1->GetAllComponents()) {
-				component->OnCollisionStay(e0);
+				if (component->GetEnabled()) {
+					component->OnCollisionStay(e0);
+				}
 			}
 		}
 		// Update the snapshot
@@ -413,10 +471,14 @@ void World::Tick(float deltaTime)
 			for (const btCollisionObject* coll : m_collisionMap[pair.first]) {
 				Entity* e1 = static_cast<Entity*>(coll->getUserPointer());
 				for (Component* component : e0->GetAllComponents()) {
-					component->OnCollisionEnd(e1);
+					if (component->GetEnabled()) {
+						component->OnCollisionEnd(e1);
+					}
 				}
 				for (Component* component : e1->GetAllComponents()) {
-					component->OnCollisionEnd(e0);
+					if (component->GetEnabled()) {
+						component->OnCollisionEnd(e0);
+					}
 				}
 			}
 		}
@@ -427,10 +489,14 @@ void World::Tick(float deltaTime)
 				if (collisionSnapshot[pair.first].count(coll) == 0) {
 					Entity* e1 = static_cast<Entity*>(coll->getUserPointer());
 					for (Component* component : e0->GetAllComponents()) {
-						component->OnCollisionEnd(e1);
+						if (component->GetEnabled()) {
+							component->OnCollisionEnd(e1);
+						}
 					}
 					for (Component* component : e1->GetAllComponents()) {
-						component->OnCollisionEnd(e0);
+						if (component->GetEnabled()) {
+							component->OnCollisionEnd(e0);
+						}
 					}
 				}
 			}
@@ -441,19 +507,26 @@ void World::Tick(float deltaTime)
 
 	for (Entity* entity : m_entities) {
 		for (Component* component : entity->GetAllComponents()) {
-			component->Tick(deltaTime);
+			if (component->GetEnabled()) {
+				component->Tick(deltaTime);
+			}
 		}
 	}
+
+	m_soundSystem->update();
 
 	// Spawn and destroy entities **after** iterating through them
 	Flush();
 }
 
-void World::DrawEntities(ID3D11DeviceContext* context, DirectX::SpriteBatch* spriteBatch, int screenWidth, int screenHeight)
+void World::DrawEntities(ID3D11DeviceContext* context, ID3D11RenderTargetView* backBufferRTV, ID3D11DepthStencilView* depthStencilView, DirectX::SpriteBatch* spriteBatch, int screenWidth, int screenHeight)
 {
 	if (!m_mainCamera) {
 		return;
 	}
+
+	// Begin motion blur render
+	context->OMSetRenderTargets(1, &m_RTVs["blurTarget"], depthStencilView);
 
 	RebuildLights();
 
@@ -564,6 +637,70 @@ void World::DrawEntities(ID3D11DeviceContext* context, DirectX::SpriteBatch* spr
 		context->RSSetState(0);
 	}
 
+	// Complete motion blur render and begin bright sample render
+	context->OMSetRenderTargets(1, &m_RTVs["brightSampleTarget"], 0);
+
+	SimpleVertexShader* ppVS = m_vertexShaders["ppVS"];
+	ppVS->SetShader();
+
+	SimplePixelShader* blurPS = m_pixelShaders["blurPS"];
+	blurPS->SetShaderResourceView("Pixels", m_SRVs["blurSRV"]);
+	blurPS->SetSamplerState("Sampler", m_samplerStates["main"]);
+	blurPS->CopyAllBufferData();
+	blurPS->SetShader();
+
+	ID3D11Buffer* nothing = 0;
+	context->IASetIndexBuffer(0, DXGI_FORMAT_R32_UINT, 0);
+	context->IASetVertexBuffers(0, 1, &nothing, &stride, &offset);
+
+	context->Draw(3, 0);
+
+	ID3D11ShaderResourceView* nullSRVs[16] = {};
+	context->PSSetShaderResources(0, 16, nullSRVs);
+
+	// Complete bright sample render and begin post bloom render
+	context->OMSetRenderTargets(1, &m_RTVs["postBloomTarget"], 0);
+
+	ppVS->SetShader();
+
+	SimplePixelShader* brightSamplePS = m_pixelShaders["bloomPS"];
+	brightSamplePS->SetShaderResourceView("Pixels", m_SRVs["brightSampleSRV"]);
+	brightSamplePS->SetSamplerState("Sampler", m_samplerStates["main"]);
+	brightSamplePS->CopyAllBufferData();
+	brightSamplePS->SetShader();
+
+	nothing = 0;
+	context->IASetIndexBuffer(0, DXGI_FORMAT_R32_UINT, 0);
+	context->IASetVertexBuffers(0, 1, &nothing, &stride, &offset);
+
+	context->Draw(3, 0);
+
+	context->PSSetShaderResources(0, 16, nullSRVs);
+
+	// Complete post bloom render
+	context->OMSetRenderTargets(1, &backBufferRTV, 0);
+
+	ppVS->SetShader();
+
+	SimplePixelShader* postBloomPS = m_pixelShaders["postBloomPS"];
+	postBloomPS->SetShaderResourceView("brightSamples", m_SRVs["postBloomSRV"]);
+	postBloomPS->SetShaderResourceView("originalRender", m_SRVs["brightSampleSRV"]);
+	postBloomPS->SetSamplerState("Sampler", m_samplerStates["main"]);
+
+	postBloomPS->SetFloat("pixelWidth", 1.0f / (float)screenWidth);
+	postBloomPS->SetFloat("pixelHeight", 1.0f / (float)screenHeight);
+	postBloomPS->SetInt("blurAmount", 7);
+	postBloomPS->CopyAllBufferData();
+	postBloomPS->SetShader();
+
+	nothing = 0;
+	context->IASetIndexBuffer(0, DXGI_FORMAT_R32_UINT, 0);
+	context->IASetVertexBuffers(0, 1, &nothing, &stride, &offset);
+
+	context->Draw(3, 0);
+
+	context->PSSetShaderResources(0, 16, nullSRVs);
+
 	spriteBatch->Begin(SpriteSortMode_Deferred, m_states->NonPremultiplied());
 	while (!uiEntities.empty()) {
 		Entity* entity = uiEntities.front();
@@ -632,6 +769,7 @@ void World::DrawEntities(ID3D11DeviceContext* context, DirectX::SpriteBatch* spr
 
 	if(ammoUI && ammoUI->GetMaterial() && ammoUI->GetMesh())
 	{
+		context->OMSetRenderTargets(1, &backBufferRTV, depthStencilView);
 		ammoUI->PrepareMaterial(
 			m_mainCamera->GetViewMatrix(), m_mainCamera->GetProjectionMatrix(),
 			m_mainCamera->GetOwner()->GetTransform()->GetPosition(),
@@ -692,6 +830,9 @@ World::~World()
 	for (const auto& pair : m_SRVs) {
 		pair.second->Release();
 	}
+	for (const auto& pair : m_RTVs) {
+		pair.second->Release();
+	}
 	for (const auto& pair : m_cubeSRVs) {
 		pair.second->Release();
 	}
@@ -710,4 +851,8 @@ World::~World()
 	for (const auto& pair : m_spriteBatches) {
 		delete pair.second;
 	}
+	for (const auto& pair : m_sounds) {
+		pair.second->release();
+	}
+	m_soundSystem->release();
 }

@@ -71,19 +71,19 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <IncludePath>$(ProjectDir)include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(ProjectDir)ExternalLibs\bullet;$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(ProjectDir)ExternalLibs\bullet;$(ProjectDir)ExternalLibs\fmod;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <IncludePath>$(ProjectDir)include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(ProjectDir)ExternalLibs\bullet;$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(ProjectDir)ExternalLibs\bullet;$(ProjectDir)ExternalLibs\fmod;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <IncludePath>$(ProjectDir)include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(ProjectDir)ExternalLibs\bullet;$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(ProjectDir)ExternalLibs\bullet;$(ProjectDir)ExternalLibs\fmod;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <IncludePath>$(ProjectDir)include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(ProjectDir)ExternalLibs\bullet;$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(ProjectDir)ExternalLibs\bullet;$(ProjectDir)ExternalLibs\fmod;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -96,10 +96,11 @@
       <SubSystem>Windows</SubSystem>
       <AdditionalLibraryDirectories>
       </AdditionalLibraryDirectories>
-      <AdditionalDependencies>BulletCollision_Debug.lib;BulletDynamics_Debug.lib;LinearMath_Debug.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>BulletCollision_Debug.lib;BulletDynamics_Debug.lib;LinearMath_Debug.lib;fmod_vc.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /y /d /s /e /i "$(ProjectDir)Assets" "$(OutDir)Assets"</Command>
+      <Command>xcopy /y /d /s /e /i "$(ProjectDir)Assets" "$(OutDir)Assets"
+xcopy /y /d /s /e /i "$(ProjectDir)dlls" "$(OutDir)"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -113,10 +114,11 @@
       <SubSystem>Windows</SubSystem>
       <AdditionalLibraryDirectories>
       </AdditionalLibraryDirectories>
-      <AdditionalDependencies>BulletCollision_Debug.lib;BulletDynamics_Debug.lib;LinearMath_Debug.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>BulletCollision_Debug.lib;BulletDynamics_Debug.lib;LinearMath_Debug.lib;fmod_vc.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /y /d /s /e /i "$(ProjectDir)Assets" "$(OutDir)Assets"</Command>
+      <Command>xcopy /y /d /s /e /i "$(ProjectDir)Assets" "$(OutDir)Assets"
+xcopy /y /d /s /e /i "$(ProjectDir)dlls" "$(OutDir)"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -134,10 +136,11 @@
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalLibraryDirectories>
       </AdditionalLibraryDirectories>
-      <AdditionalDependencies>BulletCollision_Debug.lib;BulletDynamics_Debug.lib;LinearMath_Debug.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>BulletCollision_Debug.lib;BulletDynamics_Debug.lib;LinearMath_Debug.lib;fmod_vc.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /y /d /s /e /i "$(ProjectDir)Assets" "$(OutDir)Assets"</Command>
+      <Command>xcopy /y /d /s /e /i "$(ProjectDir)Assets" "$(OutDir)Assets"
+xcopy /y /d /s /e /i "$(ProjectDir)dlls" "$(OutDir)"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -155,10 +158,11 @@
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalLibraryDirectories>
       </AdditionalLibraryDirectories>
-      <AdditionalDependencies>BulletCollision_Debug.lib;BulletDynamics_Debug.lib;LinearMath_Debug.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>BulletCollision_Debug.lib;BulletDynamics_Debug.lib;LinearMath_Debug.lib;fmod_vc.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /y /d /s /e /i "$(ProjectDir)Assets" "$(OutDir)Assets"</Command>
+      <Command>xcopy /y /d /s /e /i "$(ProjectDir)Assets" "$(OutDir)Assets"
+xcopy /y /d /s /e /i "$(ProjectDir)dlls" "$(OutDir)"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -186,6 +190,7 @@
     <ClCompile Include="ShapeSpawnerManager.cpp" />
     <ClCompile Include="SimpleShader.cpp" />
     <ClCompile Include="TimedDestructor.cpp" />
+    <ClCompile Include="SoundComponent.cpp" />
     <ClCompile Include="Transform.cpp" />
     <ClCompile Include="UITextComponent.cpp" />
     <ClCompile Include="UITransform.cpp" />
@@ -215,6 +220,7 @@
     <ClInclude Include="ShapeSpawnerManager.h" />
     <ClInclude Include="SimpleShader.h" />
     <ClInclude Include="TimedDestructor.h" />
+    <ClInclude Include="SoundComponent.h" />
     <ClInclude Include="Transform.h" />
     <ClInclude Include="UITextComponent.h" />
     <ClInclude Include="UITransform.h" />
@@ -222,6 +228,16 @@
     <ClInclude Include="World.h" />
   </ItemGroup>
   <ItemGroup>
+    <FxCompile Include="BloomPS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">5.0</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">5.0</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
+    </FxCompile>
     <FxCompile Include="ParticlePS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
@@ -242,6 +258,36 @@
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="BlurPS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">5.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">5.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="PostBloomPS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">5.0</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">5.0</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="PostProcessVS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">5.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">5.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
     </FxCompile>
     <FxCompile Include="PSSkyBox.hlsl">

@@ -17,6 +17,8 @@
 #include <SpriteFont.h>
 #include "UITextComponent.h"
 #include "ButtonComponent.h"
+#include <fmod/fmod.hpp>
+#include "SoundComponent.h"
 
 // For the DirectX Math library
 using namespace DirectX;
@@ -101,6 +103,12 @@ void Game::LoadResources()
 	// Particle shaders
 	SimpleVertexShader* particleVs = world->CreateVertexShader("particle", device, context, L"ParticleVS.cso");
 	SimplePixelShader* particlePs = world->CreatePixelShader("particle", device, context, L"ParticlePS.cso");
+	// Motion Blur shaders
+	world->CreateVertexShader("ppVS", device, context, L"PostProcessVS.cso");
+	world->CreatePixelShader("blurPS", device, context, L"BlurPS.cso");
+	// Bloom shaders
+	world->CreatePixelShader("bloomPS", device, context, L"BloomPS.cso");
+	world->CreatePixelShader("postBloomPS", device, context, L"PostBloomPS.cso");
 
 	// Textures
 	world->CreateTexture("leather", device, context, L"Assets/Textures/Leather.jpg");
@@ -136,6 +144,8 @@ void Game::LoadResources()
 	// UI Resources
 	world->CreateSpriteBatch("main", context);
 	world->CreateFont("Open Sans", device, L"Assets/Fonts/open-sans.spritefont");
+	world->CreateFont("Roboto", device, L"Assets/Fonts/roboto.spritefont");
+
 
 	// Particles
 	D3D11_DEPTH_STENCIL_DESC particleDsDesc = {};
@@ -157,7 +167,99 @@ void Game::LoadResources()
 	particleBlendDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
 	world->CreateBlendState("particle", &particleBlendDesc, device);
 
-	
+	// Post-processes
+	// blur
+	ID3D11Texture2D* blurTexture;
+	D3D11_TEXTURE2D_DESC blurDesc = {};
+	blurDesc.Width = width;
+	blurDesc.Height = height;
+	blurDesc.ArraySize = 1;
+	blurDesc.BindFlags = D3D10_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
+	blurDesc.CPUAccessFlags = 0;
+	blurDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	blurDesc.MipLevels = 1;
+	blurDesc.MiscFlags = 0;
+	blurDesc.SampleDesc.Count = 1;
+	blurDesc.SampleDesc.Quality = 0;
+	blurDesc.Usage = D3D11_USAGE_DEFAULT;
+	device->CreateTexture2D(&blurDesc, 0, &blurTexture);
+
+	D3D11_RENDER_TARGET_VIEW_DESC blurRtvDesc = {};
+	blurRtvDesc.Format = blurDesc.Format;
+	blurRtvDesc.Texture2D.MipSlice = 0;
+	blurRtvDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
+	world->CreateRenderTargetView("blurTarget", device, blurTexture, &blurRtvDesc);
+
+	D3D11_SHADER_RESOURCE_VIEW_DESC blurSrvDesc = {};
+	blurSrvDesc.Format = blurDesc.Format;
+	blurSrvDesc.Texture2D.MipLevels = 1;
+	blurSrvDesc.Texture2D.MostDetailedMip = 0;
+	blurSrvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+	world->CreateTexture("blurSRV", device, blurTexture, &blurSrvDesc);
+
+	blurTexture->Release();
+
+	// bright samples
+	ID3D11Texture2D* brightSampleTexture;
+	D3D11_TEXTURE2D_DESC brightSampleDesc = {};
+	brightSampleDesc.Width = width;
+	brightSampleDesc.Height = height;
+	brightSampleDesc.ArraySize = 1;
+	brightSampleDesc.BindFlags = D3D10_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
+	brightSampleDesc.CPUAccessFlags = 0;
+	brightSampleDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	brightSampleDesc.MipLevels = 1;
+	brightSampleDesc.MiscFlags = 0;
+	brightSampleDesc.SampleDesc.Count = 1;
+	brightSampleDesc.SampleDesc.Quality = 0;
+	brightSampleDesc.Usage = D3D11_USAGE_DEFAULT;
+	device->CreateTexture2D(&brightSampleDesc, 0, &brightSampleTexture);
+
+	D3D11_RENDER_TARGET_VIEW_DESC brightSampleRtvDesc = {};
+	brightSampleRtvDesc.Format = brightSampleDesc.Format;
+	brightSampleRtvDesc.Texture2D.MipSlice = 0;
+	brightSampleRtvDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
+	world->CreateRenderTargetView("brightSampleTarget", device, brightSampleTexture, &brightSampleRtvDesc);
+
+	D3D11_SHADER_RESOURCE_VIEW_DESC brightSampleSrvDesc = {};
+	brightSampleSrvDesc.Format = brightSampleDesc.Format;
+	brightSampleSrvDesc.Texture2D.MipLevels = 1;
+	brightSampleSrvDesc.Texture2D.MostDetailedMip = 0;
+	brightSampleSrvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+	world->CreateTexture("brightSampleSRV", device, brightSampleTexture, &brightSampleSrvDesc);
+
+	brightSampleTexture->Release();
+
+	// post bloom
+	ID3D11Texture2D* postBloomTexture;
+	D3D11_TEXTURE2D_DESC postBloomDesc = {};
+	postBloomDesc.Width = width;
+	postBloomDesc.Height = height;
+	postBloomDesc.ArraySize = 1;
+	postBloomDesc.BindFlags = D3D10_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
+	postBloomDesc.CPUAccessFlags = 0;
+	postBloomDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	postBloomDesc.MipLevels = 1;
+	postBloomDesc.MiscFlags = 0;
+	postBloomDesc.SampleDesc.Count = 1;
+	postBloomDesc.SampleDesc.Quality = 0;
+	postBloomDesc.Usage = D3D11_USAGE_DEFAULT;
+	device->CreateTexture2D(&postBloomDesc, 0, &postBloomTexture);
+
+	D3D11_RENDER_TARGET_VIEW_DESC postBloomRtvDesc = {};
+	postBloomRtvDesc.Format = postBloomDesc.Format;
+	postBloomRtvDesc.Texture2D.MipSlice = 0;
+	postBloomRtvDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
+	world->CreateRenderTargetView("postBloomTarget", device, postBloomTexture, &postBloomRtvDesc);
+
+	D3D11_SHADER_RESOURCE_VIEW_DESC postBloomSrvDesc = {};
+	postBloomSrvDesc.Format = postBloomDesc.Format;
+	postBloomSrvDesc.Texture2D.MipLevels = 1;
+	postBloomSrvDesc.Texture2D.MostDetailedMip = 0;
+	postBloomSrvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+	world->CreateTexture("postBloomSRV", device, postBloomTexture, &postBloomSrvDesc);
+
+	postBloomTexture->Release();
 
 	// Materials
 	world->CreateMaterial("leather", vs, ps, world->GetTexture("leather"), world->GetTexture("velvet_normal"), skyTex, world->GetSamplerState("main"));
@@ -179,8 +281,13 @@ void Game::LoadResources()
 		world->GetBlendState("particle"),
 		world->GetDepthStencilState("particle")
 	);
-	world->CreateMaterial("cockpitHUD", vs, uiPs, world->GetTexture("cockpit"), nullptr, skyTex, world->GetSamplerState("main"));
+	world->CreateMaterial("cockpitHUD", nullptr, nullptr, world->GetTexture("cockpit"), nullptr, skyTex, world->GetSamplerState("main"));
 
+	// Audio
+	world->CreateSound("hit", "Assets/Audio/hit.wav")->setMode(FMOD_LOOP_OFF);
+	world->CreateSound("fire", "Assets/Audio/fire.wav")->setMode(FMOD_LOOP_OFF);
+	world->CreateSound("hitFail", "Assets/Audio/hitFail.wav")->setMode(FMOD_LOOP_OFF);
+	world->CreateSound("bg", "Assets/Audio/shape-shooter.wav")->setMode(FMOD_LOOP_NORMAL);
 }
 
 
@@ -205,7 +312,7 @@ void Game::LoadMainMenu()
 	);
 	mainText->AddComponent<UITextComponent>()->Init(
 		"Shape Shooter",
-		world->GetFont("Open Sans"),
+		world->GetFont("Roboto"),
 		Colors::White
 	);
 
@@ -219,7 +326,7 @@ void Game::LoadMainMenu()
 	);
 	startText->AddComponent<UITextComponent>()->Init(
 		"- Start Game -",
-		world->GetFont("Open Sans"),
+		world->GetFont("Roboto"),
 		Colors::Red
 	);
 	startText->AddComponent<ButtonComponent>()->AddOnClick([&]() {
@@ -238,7 +345,7 @@ void Game::LoadMainMenu()
 	);
 	creditsText->AddComponent<UITextComponent>()->Init(
 		"?",
-		world->GetFont("Open Sans"),
+		world->GetFont("Roboto"),
 		Colors::Green
 	);
 	creditsText->AddComponent<ButtonComponent>()->AddOnClick([&]() {
@@ -286,15 +393,6 @@ void Game::LoadGame()
 
 	World* world = World::GetInstance();
 
-	Entity* ShapeSpawnManager = world->Instantiate("ShapeSpawnManager");
-	ShapeSpawnerManagerComponent* ss = ShapeSpawnManager->AddComponent<ShapeSpawnerManagerComponent>();
-
-	ss->OnLose = [&]() {
-		World* world = World::GetInstance();
-		world->DestroyAllEntities();
-		LoadGameOver();
-	};
-
 	Entity* camera = world->Instantiate("Cam");
 	CameraComponent* cc = camera->AddComponent<CameraComponent>();
 	cc->UpdateProjectionMatrix((float)width / height);
@@ -307,6 +405,12 @@ void Game::LoadGame()
 	rbc->SetSphereCollider(1.0f);
 	camera->AddTag("player");
 
+	LightComponent* headLight = camera->AddComponent<LightComponent>();
+	headLight->m_data.type = LightComponent::Spot;
+	headLight->m_data.intensity = 2.0f;
+	headLight->m_data.range = 20.0f;
+	headLight->m_data.spotFalloff = 1.0f;
+	headLight->m_data.color = XMFLOAT3(1.0f, 1.0f, 1.0f);
 
 	Launcher* launcher = camera->AddComponent<Launcher>();
 	launcher->SetAmmoMaterial(world->GetMaterial("metal"));
@@ -317,9 +421,20 @@ void Game::LoadGame()
 	launcher->AddAmmoMesh(world->GetMesh("helix"));
 	launcher->AddAmmoMesh(world->GetMesh("torus"));
 
+	SoundComponent* camSC = camera->AddComponent<SoundComponent>();
+	camSC->SetSound(world->GetSound("fire"));
+
+	Entity* ShapeSpawnManager = world->Instantiate("ShapeSpawnManager");
+	ShapeSpawnerManagerComponent* ss = ShapeSpawnManager->AddComponent<ShapeSpawnerManagerComponent>();
+	ShapeSpawnManager->AddComponent<SoundComponent>();
+
+	ss->OnLose = [&]() {
+		World* world = World::GetInstance();
+		world->DestroyAllEntities();
+		LoadGameOver();
+	};
 
 	world->m_mainCamera = cc;
-
 
 	// Ammo Visualizer
 	Entity* ammoVis = world->Instantiate("ammo visualizer");
@@ -331,11 +446,16 @@ void Game::LoadGame()
 	ammoVis->AddTag("ammoUI");
 
 	// Light Entities
-	Entity* dirLight = world->Instantiate("DirLight1");
+	/*Entity* dirLight = world->Instantiate("DirLight1");
 	LightComponent* dirLightComp = dirLight->AddComponent<LightComponent>();
 	dirLightComp->m_data.type = LightComponent::Directional;
 	dirLightComp->m_data.color = XMFLOAT3(1.0f, 1.0f, 1.0f);
-	dirLightComp->m_data.intensity = 2.0f;
+	dirLightComp->m_data.intensity = 2.0f;*/
+
+	Entity* bgMusic = world->Instantiate("BGMusic");
+	SoundComponent* bgSC = bgMusic->AddComponent<SoundComponent>();
+	bgSC->SetSound(world->GetSound("bg"));
+	bgSC->Play();
 
 	// UI elements
 	Entity* cockpit = world->Instantiate("Cockpit");
@@ -351,13 +471,13 @@ void Game::LoadGame()
 	score->AddComponent<UITransform>()->Init(
 		Anchor::BOTTOM_CENTER,
 		0.0f,
-		XMFLOAT2(1.0f, 2.5f),
-		XMFLOAT2(1.25f, 1.0f),
-		XMFLOAT2(0.0f, 0.0f)
+		XMFLOAT2(0.5f, 1.0f),
+		XMFLOAT2(1.0f, 1.0f),
+		XMFLOAT2(-10.0f, -80.0f)
 	);
 	score->AddComponent<UITextComponent>()->Init(
 		"0",
-		world->GetFont("Open Sans"),
+		world->GetFont("Roboto"),
 		Colors::White
 	);
 }
@@ -374,7 +494,7 @@ void Game::LoadCredits()
 
 	world->m_mainCamera = cc;
 
-	Entity* mainText = world->Instantiate("Credits Text");
+	Entity* mainText = world->Instantiate("Header");
 	mainText->AddComponent<UITransform>()->Init(
 		Anchor::CENTER_CENTER,
 		0.0f,
@@ -383,8 +503,8 @@ void Game::LoadCredits()
 		XMFLOAT2(0, 0)
 	);
 	mainText->AddComponent<UITextComponent>()->Init(
-		"- Credits -",
-		world->GetFont("Open Sans"),
+		"Shape Shooter was developed with the FT Engine by\nMichael Capra, Michelle Petilli, Dan Singer, and Julian Washington",
+		world->GetFont("Roboto"),
 		Colors::White
 	);
 
@@ -398,7 +518,7 @@ void Game::LoadCredits()
 	);
 	backText->AddComponent<UITextComponent>()->Init(
 		"Back",
-		world->GetFont("Open Sans"),
+		world->GetFont("Roboto"),
 		Colors::White
 	);
 	backText->AddComponent<ButtonComponent>()->AddOnClick([&]() {
@@ -490,6 +610,14 @@ void Game::Update(float deltaTime, float totalTime)
 		float yaw = mouseMoveX * sensitivity * deltaTime;
 		float pitch = mouseMoveY * sensitivity * deltaTime;
 
+		// Set the motion blur to instensify with camera rotation
+		World::GetInstance()->GetPixelShader("blurPS")->SetFloat("pixelWidth", 1.0f / (float)width);
+		World::GetInstance()->GetPixelShader("blurPS")->SetFloat("pixelHeight", 1.0f / (float)height);
+		World::GetInstance()->GetPixelShader("blurPS")->SetInt("blurAmountX", (int)(yaw * 100.0f) <= 10 ? (int)(yaw * 100.0f) : 10);
+		World::GetInstance()->GetPixelShader("blurPS")->SetInt("blurAmountY", (int)(pitch * 100.0f) <= 10 ? (int)(pitch * 100.0f) : 10);
+
+		World::GetInstance()->GetPixelShader("blurPS")->CopyAllBufferData();
+
 		mouseYaw += yaw;
 		mousePitch += pitch;
 
@@ -539,6 +667,7 @@ void Game::Draw(float deltaTime, float totalTime)
 	//  - Do this ONCE PER FRAME
 	//  - At the beginning of Draw (before drawing *anything*)
 	context->ClearRenderTargetView(backBufferRTV, color);
+	context->ClearRenderTargetView(World::GetInstance()->GetRenderTargetView("blurTarget"), color);
 	context->ClearDepthStencilView(
 		depthStencilView,
 		D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL,
@@ -548,7 +677,7 @@ void Game::Draw(float deltaTime, float totalTime)
 	
 	// Draw each entity
 	SpriteBatch* mainSpriteBatch = World::GetInstance()->GetSpriteBatch("main");
-	World::GetInstance()->DrawEntities(context, mainSpriteBatch, width, height);
+	World::GetInstance()->DrawEntities(context, backBufferRTV, depthStencilView, mainSpriteBatch, width, height);
 
 	
 

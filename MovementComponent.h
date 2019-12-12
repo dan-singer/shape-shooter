@@ -28,8 +28,8 @@ private:
 	char moveBack = 'S';
 	char moveLeft = 'D';
 	char moveRight = 'A';
-	unsigned int* width; //window width height
-	unsigned int* height;
+	unsigned int* width = nullptr; //window width height
+	unsigned int* height = nullptr;
 	float m_speed = 1.0f; //Speed of the player
 	float m_sensitivity = 0.001f; //How quickly the camera rotates depending on mouse movemnt
 	float m_pitch = 0.0f;

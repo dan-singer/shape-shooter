@@ -13,22 +13,22 @@ public:
 	enum Type
 	{
 		Directional = 0,
-		Point,
-		Spot
+		Point = 1,
+		Spot = 2
 	};
 
 	// --------------------------------------------------------
 	// Light Structure that gets passed to the GPU
 	// --------------------------------------------------------
 	struct Light {
-		Type type;
-		DirectX::XMFLOAT3 direction = DirectX::XMFLOAT3(0,0,1); // 16 Bytes
+		Type type = Type::Directional;
+		DirectX::XMFLOAT3 direction = DirectX::XMFLOAT3(0.0f,0.0f,1.0f); // 16 Bytes
 		float range = 5.0f;
-		DirectX::XMFLOAT3 position = DirectX::XMFLOAT3(0,0,0); // 32 Bytes
+		DirectX::XMFLOAT3 position = DirectX::XMFLOAT3(0.0f,0.0f,0.0f); // 32 Bytes
 		float intensity = 1.0f;
-		DirectX::XMFLOAT3 color = DirectX::XMFLOAT3(1,1,1); // 48 Bytes
+		DirectX::XMFLOAT3 color = DirectX::XMFLOAT3(1.0f,1.0f,1.0f); // 48 Bytes
 		float spotFalloff = 1.0f;
-		DirectX::XMFLOAT3 padding; //64 bytes
+		DirectX::XMFLOAT3 padding = DirectX::XMFLOAT3(0, 0, 0); //64 bytes
 	};
 
 	Light m_data;
