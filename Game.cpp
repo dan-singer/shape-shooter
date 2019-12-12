@@ -292,7 +292,7 @@ void Game::LoadGame()
 	ss->OnLose = [&]() {
 		World* world = World::GetInstance();
 		world->DestroyAllEntities();
-		//LoadGameOver();
+		LoadGameOver();
 	};
 
 	Entity* camera = world->Instantiate("Cam");
@@ -411,8 +411,52 @@ void Game::LoadCredits()
 
 void Game::LoadGameOver()
 {
+	ShowCursor(true);
+	allowCameraRotation = false;
 	//Do game over things here
-	printf("Lost\n");
+	World* world = World::GetInstance();
+	Entity* camera = world->Instantiate("Cam");
+	CameraComponent* cc = camera->AddComponent<CameraComponent>();
+	cc->UpdateProjectionMatrix((float)width / height);
+	camera->GetTransform()->SetPosition(XMFLOAT3(0, 0, -10));
+
+	world->m_mainCamera = cc;
+	
+
+	Entity* mainText = world->Instantiate("Game Over Text");
+	mainText->AddComponent<UITransform>()->Init(
+		Anchor::CENTER_CENTER,
+		0.0f,
+		XMFLOAT2(0.5f, 0.5f),
+		XMFLOAT2(1, 1),
+		XMFLOAT2(0, 0)
+	);
+	mainText->AddComponent<UITextComponent>()->Init(
+		"Game Over!",
+		world->GetFont("Open Sans"),
+		Colors::White
+	);
+
+	Entity* restartButton = world->Instantiate("RestartButton");
+	restartButton->AddComponent<UITransform>()->Init(Anchor::BOTTOM_CENTER,
+		0.0f,
+		XMFLOAT2(.5f, 0),
+		XMFLOAT2(.75f, .75f),
+		XMFLOAT2(0, -50.0f)
+	);
+
+	restartButton->AddComponent<UITextComponent>()->Init(
+		"Play Again?",
+		world->GetFont("Open Sans"),
+		Colors::White
+	);
+
+	restartButton->AddComponent<ButtonComponent>()->AddOnClick([&]() {
+
+		World* world = World::GetInstance();
+		world->DestroyAllEntities();
+		LoadGame();
+	});
 }
 
 // --------------------------------------------------------
