@@ -205,7 +205,6 @@
     <FxCompile Include="UIPixelShader.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="PSSkyBox.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
     <FxCompile Include="VSSkyBox.hlsl">
@@ -223,13 +222,9 @@
     <FxCompile Include="psSkyBox.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="psSkyBox.hlsl" />
-    <FxCompile Include="psSkyBox.hlsl" />
-    <FxCompile Include="psSkyBox.hlsl" />
     <FxCompile Include="BlurPS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="psSkyBox.hlsl" />
     <FxCompile Include="PostProcessVS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
